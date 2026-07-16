@@ -1,0 +1,458 @@
+/* SPhoto QA Hub - assume que css/sphoto.css ja foi carregado antes (usa as
+   variaveis --primary/--bg-card/etc. definidas la em :root). */
+
+/* Abas de topo (Fila de Envio / Agenda de Edicao) - trocam a tela inteira,
+   diferente das abas Foto/Edicao que ficam dentro do detalhe de um GTIN. */
+.qa-top-tabs {
+    display: flex;
+    gap: 4px;
+}
+
+.qa-top-tab-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.qa-top-tab-btn:hover { background-color: rgba(255, 255, 255, 0.08); }
+
+.qa-top-tab-btn.ativa {
+    color: #fff;
+    background-color: rgba(25, 118, 210, 0.25);
+}
+
+.qa-girando {
+    animation: qa-girar 1s linear infinite;
+}
+
+@keyframes qa-girar {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.qa-layout {
+    display: flex;
+    height: calc(100vh - 60px);
+}
+
+.qa-agenda {
+    padding: 20px 24px;
+    overflow-y: auto;
+    height: calc(100vh - 60px);
+}
+
+.qa-agenda-tabela {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.qa-agenda-tabela th {
+    text-align: left;
+    padding: 10px 14px;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    border-bottom: 1px solid var(--border);
+}
+
+.qa-agenda-tabela td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.qa-agenda-tabela tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.qa-previsao-origem {
+    margin-left: 8px;
+    font-size: 0.68rem;
+    padding: 2px 6px;
+    border-radius: 8px;
+    text-transform: uppercase;
+    font-weight: 600;
+    background-color: var(--bg-input);
+    color: var(--text-muted);
+}
+
+.qa-previsao-origem.pos_producao {
+    background-color: var(--primary);
+    color: #fff;
+}
+
+.qa-arvore {
+    width: 320px;
+    min-width: 260px;
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+    background-color: var(--bg-card);
+    padding: 12px;
+}
+
+.qa-detalhe {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.qa-os-grupo { margin-bottom: 8px; }
+
+.qa-os-titulo {
+    font-weight: 600;
+    padding: 8px 6px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+}
+
+.qa-os-enviar-btn {
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 5px;
+    border: 1px solid var(--primary);
+    background-color: transparent;
+    color: var(--primary);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.qa-os-enviar-btn:hover:not(:disabled) { background-color: var(--primary); color: #fff; }
+.qa-os-enviar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.qa-os-status {
+    font-size: 0.7rem;
+    padding: 2px 6px 6px;
+}
+
+.qa-gtin-item {
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+}
+
+.qa-gtin-item:hover { background-color: rgba(255, 255, 255, 0.04); }
+
+.qa-gtin-item.ativo {
+    background-color: rgba(25, 118, 210, 0.15);
+    border-left: 3px solid var(--primary);
+}
+
+.qa-destino-badge {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.qa-destino-eua { background-color: var(--info); color: #fff; }
+.qa-destino-brasil { background-color: var(--success); color: #fff; }
+.qa-destino-indefinido { background-color: var(--danger); color: #fff; }
+
+/* Abas QA de Foto / QA de Edicao */
+.qa-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+}
+
+.qa-tab-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    padding: 10px 18px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+}
+
+.qa-tab-btn.ativa {
+    color: var(--text);
+    border-bottom-color: var(--primary);
+}
+
+/* Grid de miniaturas 100x100 - bem mais leve que os 150x150 da captura */
+.qa-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.qa-miniatura-wrap { width: 104px; }
+
+.qa-miniatura {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    cursor: pointer;
+    background-color: var(--bg-input);
+}
+
+.qa-miniatura img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.qa-miniatura-nome {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Barra de acao compacta abaixo da miniatura - o btn-group padrao do Bootstrap
+   nao cabe 4 botoes legiveis em 100px de largura. */
+.qa-acoes-mini {
+    display: flex;
+    gap: 2px;
+    margin-top: 3px;
+}
+
+.qa-acao-mini {
+    flex: 1;
+    padding: 3px 0;
+    font-size: 0.62rem;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    background-color: var(--bg-input);
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.qa-acao-mini:hover { filter: brightness(1.3); }
+
+.qa-acao-mini.coding { border-color: var(--warning); color: var(--warning); }
+.qa-acao-mini.coding.ativa { background-color: var(--warning); color: #1a1a1a; }
+
+.qa-acao-mini.rt { border-color: #fd7e14; color: #fd7e14; }
+.qa-acao-mini.is { border-color: var(--info); color: var(--info); }
+.qa-acao-mini.ap { border-color: #9c27b0; color: #9c27b0; }
+
+/* OCR: verde pra separar visualmente do RT/IS/AP - aquelas MOVEM o arquivo entre subpastas,
+   esta so GERA uma copia jpg pro Cadastro e nao mexe em nada de lugar. */
+.qa-acao-mini.ocr { border-color: var(--success); color: var(--success); }
+.qa-acao-mini.ocr:disabled { opacity: 0.4; cursor: wait; }
+
+.qa-acao-mini.voltar {
+    flex: none;
+    width: 100%;
+    color: var(--text-muted);
+}
+
+/* Cores de marcacao - mesma logica do .tem-coding do index (borda + glow) */
+.qa-miniatura.tem-coding { border-color: var(--warning); box-shadow: 0 0 0 2px var(--warning); }
+.qa-miniatura.tem-rt { border-color: #fd7e14; box-shadow: 0 0 0 2px #fd7e14; }
+.qa-miniatura.tem-is { border-color: var(--info); box-shadow: 0 0 0 2px var(--info); }
+.qa-miniatura.tem-ap { border-color: #9c27b0; box-shadow: 0 0 0 2px #9c27b0; }
+
+.qa-subpasta-titulo {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin: 12px 0 8px;
+    text-transform: uppercase;
+}
+
+/* Legenda de cores */
+.qa-legenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 10px 14px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 0.8rem;
+}
+
+.qa-legenda-item { display: flex; align-items: center; gap: 6px; }
+
+.qa-legenda-cor {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.qa-legenda-cor.coding { background-color: var(--warning); }
+.qa-legenda-cor.rt { background-color: #fd7e14; }
+.qa-legenda-cor.is { background-color: var(--info); }
+.qa-legenda-cor.ap { background-color: #9c27b0; }
+
+/* Marcacao manual do destino Brasil (Mockup/Recorte) - cria/remove a subpasta real,
+   diferente das tags RT/IS/AP que so movem arquivo dentro da mesma pasta de GTIN. */
+.qa-destino-manual {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.qa-destino-manual-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.qa-destino-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+}
+
+.qa-destino-btn small { font-weight: 400; opacity: 0.8; }
+
+.qa-destino-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.qa-destino-btn:hover:not(:disabled) { filter: brightness(1.2); }
+
+.qa-destino-btn.recorte.ativa { background-color: var(--success); border-color: var(--success); color: #fff; }
+.qa-destino-btn.mockup.ativa { background-color: var(--success); border-color: var(--success); color: #fff; }
+
+/* Envio pro robo Syncimg (copia pra AgEnvio + aciona o .bat que sobe pro S3) */
+.qa-enviar-conferencia {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.qa-conferencia-status {
+    font-size: 0.8rem;
+}
+
+.qa-conferencia-status.ja-enviado { color: var(--text-muted); }
+.qa-conferencia-status.sucesso { color: var(--success); }
+.qa-conferencia-status.erro { color: var(--danger); }
+
+/* Fotos editadas recebidas de volta (bucket EditingDone -> AguardandoQA) */
+.qa-editadas-recebidas {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+}
+
+.qa-editadas-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.qa-editadas-lista {
+    font-size: 0.82rem;
+}
+
+.qa-editadas-lista ul {
+    margin: 0;
+    padding-left: 18px;
+    max-height: 140px;
+    overflow-y: auto;
+}
+
+.qa-vazio-inline {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
+/* Badges de tag (texto), quando nao da pra usar a miniatura */
+.tag-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.tag-badge.tag-rt { background-color: #fd7e14; }
+.tag-badge.tag-is { background-color: var(--info); }
+.tag-badge.tag-ap { background-color: #9c27b0; }
+
+/* Painel de campos do Redmine (aba QA de Edicao) */
+.qa-campo-linha {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.qa-campo-label {
+    width: 200px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.qa-campo-origem {
+    font-size: 0.68rem;
+    padding: 2px 6px;
+    border-radius: 8px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.qa-campo-origem.inferido { background-color: var(--bg-input); color: var(--text-muted); }
+.qa-campo-origem.manual { background-color: var(--primary); color: #fff; }
+
+.qa-conflito-aviso {
+    background-color: rgba(220, 53, 69, 0.12);
+    border: 1px solid var(--danger);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    font-size: 0.85rem;
+}
+
+.qa-vazio {
+    color: var(--text-muted);
+    text-align: center;
+    padding: 60px 20px;
+    font-size: 0.95rem;
+}

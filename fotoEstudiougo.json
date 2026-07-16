@@ -1,0 +1,68 @@
+{
+    "taskProjectRedmine": "1WS - Brasil",
+    "ruleOrigin": "SPHOTO",
+    "taskTypeRedmine": "GTIN",
+    "ruleDescription": "SPHOTO",
+    "userId": 15,
+    "userName": "Ugo Alencar",
+    "pastaDestino" : "C:\\sphoto\\Finalizadas",
+    "ruleConditions": [
+        {
+            "ruleFieldValue1": {
+                "typeField": "REDMINE_STATUS"
+            },
+            "ruleTypeCondition": "NOT_EQUAL",
+            "ruleFieldValue2": {
+                "typeField": "FIXED_VALUE",
+                "value": "Ag. Amostra"
+            },
+            "block": 1
+        },
+        {
+	    "operator": "AND",
+            "ruleFieldValue1": {
+                "typeField": "REDMINE_CUSTOM_FIELD",
+                "nameField": "#CAMPO_NOME"
+            },
+            "ruleTypeCondition": "EQUAL",
+            "ruleFieldValue2": {
+                "typeField": "FIXED_VALUE",
+                "value": "#CAMPO_VALOR"
+            },
+            "block": 1
+        }
+    ],
+    "ruleActions": [
+        {
+            "ruleFieldValue1": {
+                "typeField": "REDMINE_CUSTOM_FIELD",
+                "nameField": "Situação das Imagens"
+            },
+            "ruleFieldValue2": {
+                "typeField": "FIXED_VALUE",
+                "value":"Aguardando QA Fotografia"
+            }
+        },
+        {
+            "ruleFieldValue1": {
+                "typeField": "REDMINE_CUSTOM_FIELD",
+                "nameField": "Fotógrafo"
+            },
+            "ruleFieldValue2": {
+                "typeField": "FIXED_VALUE",
+                "value":"ugo.dealencarsantos@syndigo.com"
+            }    
+        },
+        {
+            "ruleFieldValue1": {
+                "typeField": "REDMINE_CUSTOM_FIELD",
+                "nameField": "Data fotografia"
+            },
+            "ruleFieldValue2": {
+                "typeField": "FIXED_VALUE",
+                "value":"#D0"
+            }    
+        }        
+    ],
+    "historic": "Fotografia concluída, Imagens capturadas e aguardando QA para que possa ser liberada para conferência."
+}

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPhoto - Teste Standalone (Sem Backend)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/sphoto.css">
+    <style>
+        .test-panel {
+            background: #1a1a2e;
+            border: 1px solid #16213e;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .test-panel h6 { color: #00d4ff; margin-bottom: 10px; }
+        .folder-info {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #8b949e;
+        }
+        .folder-info strong { color: #58a6ff; }
+        .scan-status { font-size: 12px; color: #8b949e; }
+        .scan-status.ativo { color: #3fb950; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <div class="header-inner">
+                <div class="header-left">
+                    <span class="header-title">SPhoto - Teste Standalone</span>
+                </div>
+                <div class="header-right">
+                    <span class="badge bg-warning">MODO TESTE - SEM BACKEND</span>
+                    <span class="scan-status" id="scanStatus">
+                        <i class="bi bi-circle-fill"></i> Auto-refresh: <span id="scanTimer">3</span>s
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="container-fluid px-4">
+                <!-- Painel de Controle -->
+                <div class="row g-3 mb-3">
+                    <div class="col-12">
+                        <div class="test-panel">
+                            <h6><i class="bi bi-gear"></i> Painel de Controle</h6>
+                            <div class="row g-2">
+                                <div class="col-md-2">
+                                    <label class="form-label">OS</label>
+                                    <input type="text" class="form-control form-control-sm" id="testOs" value="12345">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">GTIN</label>
+                                    <input type="text" class="form-control form-control-sm" id="testGtin" value="7891234567890">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Status Redmine</label>
+                                    <select class="form-select form-select-sm" id="testStatus">
+                                        <option value="aberto">Aguardando fotografia</option>
+                                        <option value="finalizado">Aguardando QA de fotografia</option>
+                                        <option value="retrabalho">Retrabalho</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Ações</label>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-primary" onclick="carregarOS()">
+                                            <i class="bi bi-arrow-clockwise"></i> Carregar OS
+                                        </button>
+                                        <button class="btn btn-sm btn-success" onclick="escanearAgora()">
+                                            <i class="bi bi-search"></i> Escanear Agora
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Auto-refresh</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="autoScan" checked onchange="toggleAutoScan()">
+                                        <label class="form-check-label" for="autoScan">Ativo (3s)</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row g-2 mt-2">
+                                <div class="col-md-3">
+                                    <small class="text-muted">Temp: <strong id="countTemp">0</strong> imagens</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">OS: <strong id="countOs">0</strong> imagens</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Status: <strong id="statusAtual">-</strong></small>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Último scan: <strong id="lastScan">-</strong></small>
+                                </div>
+                            </div>
+                            <div class="folder-info">
+                                <strong>Pastas monitoradas:</strong><br>
+                                Temp: <code>D:\sphoto\images\temp\</code><br>
+                                OS: <code>D:\sphoto\images\finalizadas\ocr\{OS}\{GTIN}\</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Layout Principal -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-8">
+                        <!-- Atual (Temp) -->
+                        <div class="card mb-3">
+                            <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                <h6 class="card-title mb-0"><i class="bi bi-camera"></i> Atual (Temp)</h6>
+                                <small class="text-muted">images/temp/</small>
+                            </div>
+                            <div class="card-body p-2">
+                                <div class="row g-2" id="gridAtual">
+                                    <div class="col-12 grid-empty">Nenhuma imagem nesta sessão</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Anterior (OS) -->
+                        <div class="card">
+                            <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                <h6 class="card-title mb-0"><i class="bi bi-images"></i> Anterior (OS)</h6>
+                                <small class="text-muted" id="pathOs">images/finalizadas/ocr/</small>
+                            </div>
+                            <div class="card-body p-2">
+                                <div class="row g-2" id="gridAnterior">
+                                    <div class="col-12 grid-empty">Nenhuma imagem anterior</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">OS</span>
+                                    <input type="text" class="form-control" id="inputOsDisplay" readonly>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">Qtde</span>
+                                    <input type="text" class="form-control" id="inputQtdeGtin" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header py-2">
+                                <h6 class="card-title mb-0"><i class="bi bi-list-ul"></i> GTINs da OS</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                    <table class="table table-hover table-sm mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>GTIN</th>
+                                                <th>Descrição</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="listaGtins"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const estado = {
+            listaGtins: [],
+            gtinAtivoIndex: -1,
+            imagensAtual: [],
+            imagensAnterior: [],
+            autoScanAtivo: true,
+            scanInterval: null,
+            scanCountdown: 3
+        };
+
+        function carregarOS() {
+            const os = document.getElementById('testOs').value;
+            const gtin = document.getElementById('testGtin').value;
+            const statusRedmine = document.getElementById('testStatus').value;
+
+            estado.listaGtins = [
+                { gtin: gtin, descricao: 'Produto Teste 1', status: statusRedmine, id: 1 },
+                { gtin: '7891234567891', descricao: 'Produto Teste 2', status: 'aberto', id: 2 },
+                { gtin: '7891234567892', descricao: 'Produto Teste 3', status: 'finalizado', id: 3 }
+            ];
+
+            document.getElementById('inputOsDisplay').value = os;
+            document.getElementById('inputQtdeGtin').value = estado.listaGtins.length;
+            document.getElementById('pathOs').textContent = 'images/finalizadas/ocr/' + os + '/' + gtin + '/';
+
+            renderizarListaGtins();
+            escanearAgora();
+        }
+
+        function selecionarGtin(index) {
+            estado.gtinAtivoIndex = index;
+            const gtin = estado.listaGtins[index];
+            document.getElementById('testGtin').value = gtin.gtin;
+            document.getElementById('pathOs').textContent = 'images/finalizadas/ocr/' + document.getElementById('testOs').value + '/' + gtin.gtin + '/';
+            renderizarListaGtins();
+        }
+
+        function renderizarListaGtins() {
+            const tbody = document.getElementById('listaGtins');
+            tbody.innerHTML = '';
+
+            estado.listaGtins.forEach(function(gtin, index) {
+                const tr = document.createElement('tr');
+                if (index === estado.gtinAtivoIndex) tr.classList.add('table-active', 'ativo');
+                if (gtin.status === 'finalizado') tr.classList.add('finalizado');
+
+                const tdGtin = document.createElement('td');
+                tdGtin.textContent = gtin.gtin || '';
+                tr.appendChild(tdGtin);
+
+                const tdDesc = document.createElement('td');
+                tdDesc.textContent = gtin.descricao || '';
+                tr.appendChild(tdDesc);
+
+                const tdStatus = document.createElement('td');
+                const statusBadge = document.createElement('span');
+                statusBadge.className = 'status-badge status-' + gtin.status;
+                var statusLabel = gtin.status === 'finalizado' ? 'Finalizado' : gtin.status === 'retrabalho' ? 'Retrabalho' : gtin.status === 'salvo' ? 'Salvo' : 'Aberto';
+                statusBadge.textContent = statusLabel;
+                tdStatus.appendChild(statusBadge);
+                tr.appendChild(tdStatus);
+
+                tr.addEventListener('click', function() { selecionarGtin(index); });
+                tbody.appendChild(tr);
+            });
+
+            if (estado.gtinAtivoIndex >= 0) {
+                document.getElementById('statusAtual').textContent = estado.listaGtins[estado.gtinAtivoIndex].status;
+            }
+        }
+
+        async function escanearAgora() {
+            try {
+                const os = document.getElementById('testOs').value;
+                const gtin = document.getElementById('testGtin').value;
+
+                const tempResponse = await fetch('/api/temp');
+                const tempImages = await tempResponse.json();
+                estado.imagensAtual = tempImages;
+
+                const osResponse = await fetch('/api/os/' + os + '/' + gtin);
+                const osImages = await osResponse.json();
+                estado.imagensAnterior = osImages;
+
+                if (osImages.length > 0 && estado.gtinAtivoIndex >= 0) {
+                    const gtinObj = estado.listaGtins[estado.gtinAtivoIndex];
+                    if (gtinObj && gtinObj.status === 'aberto') {
+                        gtinObj.status = 'salvo';
+                        renderizarListaGtins();
+                    }
+                }
+
+                renderizarImagens();
+
+                const now = new Date().toLocaleTimeString();
+                document.getElementById('lastScan').textContent = now;
+
+            } catch (err) {
+                console.error('Erro ao escanear:', err);
+            }
+        }
+
+        function renderizarImagens() {
+            const gridAtual = document.getElementById('gridAtual');
+            const gridAnterior = document.getElementById('gridAnterior');
+
+            document.getElementById('countTemp').textContent = estado.imagensAtual.length;
+            document.getElementById('countOs').textContent = estado.imagensAnterior.length;
+
+            gridAtual.innerHTML = '';
+            gridAnterior.innerHTML = '';
+
+            if (estado.imagensAtual.length === 0) {
+                gridAtual.innerHTML = '<div class="col-12 grid-empty">Nenhuma imagem nesta sessão</div>';
+            } else {
+                estado.imagensAtual.forEach(function(img) {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-3 col-sm-4 col-6 mb-2';
+                    col.innerHTML = `
+                        <div class="miniatura">
+                            <img src="${img.url}" alt="${img.nome}">
+                        </div>
+                    `;
+                    gridAtual.appendChild(col);
+                });
+            }
+
+            if (estado.imagensAnterior.length === 0) {
+                gridAnterior.innerHTML = '<div class="col-12 grid-empty">Nenhuma imagem anterior</div>';
+            } else {
+                estado.imagensAnterior.forEach(function(img) {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-3 col-sm-4 col-6 mb-2';
+                    col.innerHTML = `
+                        <div class="miniatura">
+                            <img src="${img.url}" alt="${img.nome}">
+                        </div>
+                    `;
+                    gridAnterior.appendChild(col);
+                });
+            }
+        }
+
+        function toggleAutoScan() {
+            estado.autoScanAtivo = document.getElementById('autoScan').checked;
+            if (estado.autoScanAtivo) {
+                iniciarAutoScan();
+            } else {
+                pararAutoScan();
+            }
+        }
+
+        function iniciarAutoScan() {
+            estado.scanCountdown = 3;
+            estado.scanInterval = setInterval(function() {
+                estado.scanCountdown--;
+                document.getElementById('scanTimer').textContent = estado.scanCountdown;
+                if (estado.scanCountdown <= 0) {
+                    escanearAgora();
+                    estado.scanCountdown = 3;
+                }
+            }, 1000);
+        }
+
+        function pararAutoScan() {
+            if (estado.scanInterval) {
+                clearInterval(estado.scanInterval);
+                estado.scanInterval = null;
+            }
+        }
+
+        carregarOS();
+        iniciarAutoScan();
+    </script>
+</body>
+</html>

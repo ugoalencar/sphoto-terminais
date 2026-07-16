@@ -1,0 +1,57 @@
+========================================================================
+ SPHOTO TERMINAIS - pacote pra copiar nas maquinas dos fotografos
+========================================================================
+
+O QUE E
+-------
+Copia limpa do SPhoto (captura + plataforma + QA Hub + monitor), so com o que
+e necessario pra rodar. Serve pra testar em outra maquina as melhorias/ajustes.
+
+PRE-REQUISITOS NA MAQUINA (instalar uma vez)
+--------------------------------------------
+1) Node.js  -> https://nodejs.org (versao LTS, avancar/avancar)
+2) Java (JRE/JDK) -> necessario pra plataforma (start.jar)
+   Depois de instalar, feche e abra um terminal novo.
+
+COMO INSTALAR ESTE PACOTE
+-------------------------
+1) Copie a pasta sphoto-terminais inteira pra maquina (ex: C:\sphoto).
+2) De um duplo-clique em  criar-atalho.vbs
+   -> isso cria o atalho "SPhoto" na Area de Trabalho.
+3) Pronto. Use o atalho "SPhoto" pra ligar tudo:
+   - sobe o servidor local, a camera e a plataforma (tudo oculto)
+   - abre as telas de captura (index) e do QA Hub
+
+Se preferir sem atalho, de um duplo-clique direto em  iniciar-tudo.vbs
+
+ENDERECOS DAS TELAS (se quiser abrir no navegador manualmente)
+--------------------------------------------------------------
+  Captura:   http://localhost:3000/index.html
+  QA Hub:    http://localhost:3000/qa.html
+  Monitor:   http://localhost:3000/monitor.html   (mostra Servidor/Camera/Plataforma OK)
+
+CONFIGURACAO DO FOTOGRAFO (primeira vez, na tela de captura)
+-----------------------------------------------------------
+Clique na engrenagem (canto superior direito) e informe o usuario/regra
+(o arquivo fotoEstudiougo.json ou o do fotografo). Isso fica salvo na maquina.
+
+ENTREGA (botao "Finalizar" e "Enviar para Conferencia")
+-------------------------------------------------------
+- Na captura, "Finalizar" marca o GTIN como pronto (Aguardando QA Fotografia).
+- No QA Hub, "Enviar para Conferencia" / "Enviar OS" copiam as imagens
+  (jpg E cr2) de Finalizadas\OS_xxxx pra pasta do robo enviador e disparam ele.
+- IMPORTANTE: o envio de verdade depende do robo enviador instalado em
+  C:\Apps\Syncimg (mesmo esquema do fotografo externo, so que com OS). Se ele
+  nao estiver na maquina, o botao avisa "Robo nao encontrado" - o que e normal
+  numa maquina so de teste de captura/QA.
+
+ATENCAO - CREDENCIAL
+--------------------
+O arquivo redmine-config.json contem a chave de API do Redmine de voces (usada
+pelo QA Hub pra gravar status). Ela viaja junto com esta pasta. Trate as copias
+como internas e nao compartilhe fora da equipe.
+
+O QUE NAO VEM (de proposito)
+----------------------------
+Fotos reais, historico do git, node_modules e a instancia local do syncIMG de
+edicao. As pastas Finalizadas/, images/ e QA/ vem vazias - se enchem no uso.

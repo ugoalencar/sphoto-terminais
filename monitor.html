@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPhoto - Monitor</title>
+
+    <script>
+        if (window.location.protocol === 'file:') {
+            window.location.href = 'http://localhost:3000/monitor.html';
+        }
+    </script>
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/sphoto.css">
+
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .monitor-wrap {
+            width: 100%;
+            max-width: 900px;
+            padding: 24px;
+        }
+        .monitor-titulo {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+        .monitor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+        .monitor-card {
+            background-color: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 28px 16px;
+            text-align: center;
+            transition: border-color 0.3s ease;
+        }
+        .monitor-card.ok { border-color: var(--success); }
+        .monitor-card.erro { border-color: var(--danger); }
+        .monitor-card.checando { border-color: var(--warning); }
+
+        .monitor-icone {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+        .monitor-card.ok .monitor-icone { color: var(--success); }
+        .monitor-card.erro .monitor-icone { color: var(--danger); }
+        .monitor-card.checando .monitor-icone { color: var(--warning); }
+
+        .monitor-nome {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .monitor-status {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+        .monitor-card.ok .monitor-status { color: var(--success); }
+        .monitor-card.erro .monitor-status { color: var(--danger); }
+
+        .monitor-detalhe {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+            min-height: 1.2em;
+        }
+        .monitor-atualizado {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="monitor-wrap">
+        <div class="monitor-titulo">SPhoto - Monitor de Serviços</div>
+        <div class="monitor-grid">
+            <div class="monitor-card checando" id="cardServer">
+                <div class="monitor-icone"><i class="bi bi-hdd-network-fill"></i></div>
+                <div class="monitor-nome">Servidor</div>
+                <div class="monitor-status" id="statusServer">verificando...</div>
+                <div class="monitor-detalhe" id="detalheServer"></div>
+            </div>
+            <div class="monitor-card checando" id="cardCamera">
+                <div class="monitor-icone"><i class="bi bi-camera-video-fill"></i></div>
+                <div class="monitor-nome">Câmera</div>
+                <div class="monitor-status" id="statusCamera">verificando...</div>
+                <div class="monitor-detalhe" id="detalheCamera"></div>
+            </div>
+            <div class="monitor-card checando" id="cardPlataforma">
+                <div class="monitor-icone"><i class="bi bi-diagram-3-fill"></i></div>
+                <div class="monitor-nome">Plataforma</div>
+                <div class="monitor-status" id="statusPlataforma">verificando...</div>
+                <div class="monitor-detalhe" id="detalhePlataforma"></div>
+            </div>
+        </div>
+        <div class="monitor-atualizado" id="ultimaChecagem"></div>
+    </div>
+
+    <script>
+        function aplicarStatus(prefixo, ok, textoOk, textoErro, detalhe) {
+            var card = document.getElementById('card' + prefixo);
+            var status = document.getElementById('status' + prefixo);
+            var detalheEl = document.getElementById('detalhe' + prefixo);
+            card.className = 'monitor-card ' + (ok ? 'ok' : 'erro');
+            status.textContent = ok ? textoOk : textoErro;
+            detalheEl.textContent = detalhe || '';
+        }
+
+        function checarServer() {
+            fetch('http://localhost:3000/api/status/servidor')
+                .then(function() {
+                    aplicarStatus('Server', true, 'OK', 'Offline');
+                })
+                .catch(function() {
+                    aplicarStatus('Server', false, 'OK', 'Offline', 'server.js não respondeu');
+                });
+        }
+
+        function checarCamera() {
+            fetch('http://localhost:3000/api/status/camera')
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    var detalhe = '';
+                    if (!d.conectada) {
+                        if (!d.processoRodando) detalhe = 'processo não iniciado';
+                        else if (!d.cameraPresente) detalhe = 'processo ativo, USB não detectado';
+                    }
+                    aplicarStatus('Camera', d.conectada, 'OK', 'Desconectada', detalhe);
+                })
+                .catch(function() {
+                    aplicarStatus('Camera', false, 'OK', 'Desconectada', 'server.js não respondeu');
+                });
+        }
+
+        function checarPlataforma() {
+            fetch('http://localhost:3000/api/status/plataforma')
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    aplicarStatus('Plataforma', d.conectada, 'OK', 'Desconectada', d.conectada ? '' : 'start.jar não responde na porta 8099');
+                })
+                .catch(function() {
+                    aplicarStatus('Plataforma', false, 'OK', 'Desconectada', 'server.js não respondeu');
+                });
+        }
+
+        function checarTudo() {
+            checarServer();
+            checarCamera();
+            checarPlataforma();
+            document.getElementById('ultimaChecagem').textContent =
+                'Última checagem: ' + new Date().toLocaleTimeString('pt-BR');
+        }
+
+        checarTudo();
+        setInterval(checarTudo, 5000);
+    </script>
+</body>
+</html>

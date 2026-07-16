@@ -1,0 +1,501 @@
+{
+  "extraidoDe": "formulario de edicao da issue 317836, salvo em 2026-07-13",
+  "redmine": "https://operations.simplustec.com.br/",
+  "observacao": "valores de custom_fields via API REST usam estes IDs, nao o texto",
+  "campos": {
+    "cf_84": {
+      "id": 84,
+      "nome": "Solicitante",
+      "opcoes": {
+        "90": "Fab./Distr./Import.",
+        "91": "Imperatriz",
+        "92": "GPA Saneamento 2021",
+        "93": "GPA Marca Própria",
+        "94": "Hirota",
+        "95": "Carrefour",
+        "131": "Milium",
+        "138": "Imperatriz Saneamento",
+        "139": "Milium Fabricantes",
+        "140": "GPA Saneamento 3,3k - Loja",
+        "141": "Giassi",
+        "176": "DPSP",
+        "233": "Profarma",
+        "240": "ENXUTO SUPERMERCADOS",
+        "241": "SUPER SIMPLUS DEMONSTRAÇÃO",
+        "260": "Akki"
+      }
+    },
+    "cf_64": {
+      "id": 64,
+      "nome": "Marca Exclusiva",
+      "opcoes": {
+        "0": "Não",
+        "1": "Sim"
+      }
+    },
+    "cf_65": {
+      "id": 65,
+      "nome": "Pré-Lançamento",
+      "opcoes": {
+        "0": "Não",
+        "1": "Sim"
+      }
+    },
+    "cf_16": {
+      "id": 16,
+      "nome": "Foto (OCR)",
+      "opcoes": {
+        "26": "Aguardando Início",
+        "27": "Em andamento",
+        "28": "Concluído",
+        "130": "Não aplicável",
+        "137": "Aguardando Retrabalho"
+      }
+    },
+    "cf_115": {
+      "id": 115,
+      "nome": "Retrabalho OCR",
+      "opcoes": {
+        "0": "Não",
+        "1": "Sim"
+      }
+    },
+    "cf_13": {
+      "id": 13,
+      "nome": "Origem da Amostra",
+      "opcoes": {
+        "8": "Mockup Físico",
+        "11": "Amostra física",
+        "12": "Imagem do Cliente / Mockup"
+      }
+    },
+    "cf_29": {
+      "id": 29,
+      "nome": "Responsável CS",
+      "opcoes": {
+        "37": "Vanessa Machado",
+        "40": "Importador Simplus",
+        "60": "Amanda Sampaio Costa",
+        "68": "Pablo Luiz",
+        "71": "Aline Hitos",
+        "74": "Cristiane Haak",
+        "76": "Dayene Nogueira",
+        "83": "Mirian Marta Gonzaga",
+        "89": "Plataforma Simplus",
+        "122": "Rafael Murilo Correa",
+        "126": "Rubya Miranda",
+        "135": "Luana Pereira do Carmo",
+        "206": "Jade Guedes",
+        "220": "Ágatha Bianchi",
+        "222": "Vanessa A. Oliveira Figueredo",
+        "241": "Edlind Santiago",
+        "251": "Juliana Barbosa Eiras Mariano",
+        "252": "Angel do Amaral Pedroso",
+        "259": "Henrique Andrade"
+      }
+    },
+    "cf_66": {
+      "id": 66,
+      "nome": "Pendência CS",
+      "opcoes": {
+        "0": "Não",
+        "1": "Sim"
+      }
+    },
+    "cf_67": {
+      "id": 67,
+      "nome": "Motivo da Pendência CS",
+      "opcoes": {
+        "57": "Enviar Arte Digital para Edição",
+        "58": "Falta de Ficha Técnica",
+        "59": "Enviar Nova Amostra",
+        "144": "Imagem Ilegível, Enviar Nova Imagem",
+        "145": "Falta de Pesos e Medidas do Unitário",
+        "146": "Imagem Errada, Enviar Nova Imagem",
+        "147": "Falta de Imagem Adicionais/Arte para Cadastro",
+        "148": "Produto Inativado",
+        "156": "Produto Sem Contrato, Acionar CX",
+        "177": "Enviar Etiqueta de Importação para Cadastro",
+        "186": "Arte Digital Fora do Padrão e Edição",
+        "187": "Ficha Técnica Incorreta",
+        "188": "Arquivo Corrompido, Enviar Novo",
+        "189": "Verificar Origem da Amostra (Mockup ou Amostra Física",
+        "193": "Erro no Cadastro do Fornecedor",
+        "194": "Pesos e Medidas do Unitário Incorretos",
+        "195": "Falta Bula/Arte Planificada",
+        "196": "Imagem Incompleta/Cortada",
+        "197": "Falta Mockup",
+        "201": "Amostra Não Recebida",
+        "202": "EAN/GTIN Incorreto",
+        "203": "Mockup e Arte Divergente",
+        "229": "Confirmar cadastro Unidade ou Display",
+        "238": "Enviar Etiqueta de Importação para Edição",
+        "262": "Saldo de GTINs inexistente",
+        "277": "Dados Logístico"
+      }
+    },
+    "cf_31": {
+      "id": 31,
+      "nome": "Pendência CS Resolvida",
+      "opcoes": {
+        "36": "Sim",
+        "37": "Não"
+      }
+    },
+    "cf_105": {
+      "id": 105,
+      "nome": "Notificado CS",
+      "opcoes": {
+        "0": "Não",
+        "1": "Sim"
+      }
+    },
+    "cf_163": {
+      "id": 163,
+      "nome": "Motivo da Pendência CS - Hist.",
+      "opcoes": {
+        "204": "Enviar Arte Digital para Edição",
+        "205": "Falta de Ficha Técnica",
+        "206": "Enviar Nova Amostra",
+        "210": "Imagem Ilegível, Enviar Nova Imagem",
+        "211": "Falta de Pesos e Medidas do Unitário",
+        "212": "Imagem Errada, Enviar Nova Imagem",
+        "213": "Falta de Imagem Adicionais/Arte para Cadastro",
+        "214": "Produto Inativado",
+        "215": "Produto Sem Contrato, Acionar CX",
+        "216": "Enviar Etiqueta de importação para Cadastro",
+        "217": "Arte Digital Fora do Padrão e Edição",
+        "218": "Ficha Técnica Incorreta",
+        "219": "Arquivo Corrompido, Enviar Novo",
+        "220": "Verificar Origem da Amostra (Mockup ou Amostra Física",
+        "221": "Erro no Cadastro do Fornecedor",
+        "222": "Pesos e Medidas do Unitário Incorretos",
+        "223": "Falta Bula/Arte Planificada",
+        "224": "Imagem Imcompleta/Cortada",
+        "225": "Falta Mockup",
+        "226": "Amostra Não Recebida",
+        "227": "EAN/GTIN Incorreto",
+        "228": "Mockup e Arte Divergente",
+        "236": "Confirmar cadastro Unidade ou Display",
+        "237": "Falta Imagem",
+        "239": "Enviar Etiqueta de Importação para Edição",
+        "263": "Bula Errada",
+        "264": "Falta imagem do Display/ Pack",
+        "266": "Saldo de GTINs inexistente"
+      }
+    },
+    "cf_151": {
+      "id": 151,
+      "nome": "Imagem de Cliente Corrigida",
+      "opcoes": {
+        "0": "Não",
+        "1": "Sim"
+      }
+    },
+    "cf_15": {
+      "id": 15,
+      "nome": "Situação das Imagens",
+      "opcoes": {
+        "18": "Aguardando Fotografia",
+        "19": "Aguardando QA Fotografia",
+        "20": "Aguardando Edição",
+        "22": "Aguardando QA Edição",
+        "23": "Em Retrabalho Edição",
+        "24": "Retrabalho Fotografia",
+        "25": "Imagens Carregadas",
+        "85": "Em Edição",
+        "96": "Em QA",
+        "97": "Qualidade Aprovada",
+        "154": "Ag. Conferência",
+        "155": "Em Conferência",
+        "157": "Ag. Retrabalho Edição",
+        "158": "Aguardando QA Retrabalho"
+      }
+    },
+    "cf_36": {
+      "id": 36,
+      "nome": "Divergência Qtd. Imagens",
+      "opcoes": {
+        "0": "Não",
+        "1": "Sim"
+      }
+    },
+    "cf_62": {
+      "id": 62,
+      "nome": "Fotógrafo",
+      "opcoes": {
+        "15": "Ugo Alencar",
+        "20": "Amanda Rodrigues Schneider",
+        "40": "Importador Simplus",
+        "68": "Pablo Luiz",
+        "85": "Lilian Gregorio",
+        "89": "Plataforma Simplus",
+        "122": "Rafael Murilo Correa",
+        "184": "Rogério Hoffmann",
+        "217": "Flávio Demarchi",
+        "233": "Gabriel da Silva",
+        "243": "Julia Porcher da Silva",
+        "246": "Junsang Bae",
+        "258": "Bright River",
+        "259": "Henrique Andrade"
+      }
+    },
+    "cf_110": {
+      "id": 110,
+      "nome": "Retrabalho de Fotografia",
+      "opcoes": {
+        "0": "Não",
+        "1": "Sim"
+      }
+    },
+    "cf_187": {
+      "id": 187,
+      "nome": "Motivo Retrabalho Fotografia",
+      "opcoes": {
+        "272": "Fotografia tremida",
+        "273": "Falta Fotografia",
+        "274": "Iluminação / Cor",
+        "275": "Angulação errada"
+      }
+    },
+    "cf_109": {
+      "id": 109,
+      "nome": "Fornecedor Pagante",
+      "opcoes": {
+        "0": "Não",
+        "1": "Sim"
+      }
+    },
+    "cf_23": {
+      "id": 23,
+      "nome": "Responsável Pós-Produção",
+      "opcoes": {
+        "15": "Ugo Alencar",
+        "16": "Nelyana Girardi",
+        "32": "Virafilme(Best Image) Terceiro",
+        "34": "Karoline Ramos",
+        "40": "Importador Simplus",
+        "85": "Lilian Gregorio",
+        "89": "Plataforma Simplus",
+        "122": "Rafael Murilo Correa",
+        "169": "Virafilme Alternativo",
+        "184": "Rogério Hoffmann",
+        "233": "Gabriel da Silva",
+        "243": "Julia Porcher da Silva",
+        "246": "Junsang Bae",
+        "258": "Bright River",
+        "259": "Henrique Andrade"
+      }
+    },
+    "cf_85": {
+      "id": 85,
+      "nome": "Responsável QA Imagem",
+      "opcoes": {
+        "15": "Ugo Alencar",
+        "16": "Nelyana Girardi",
+        "32": "Virafilme(Best Image) Terceiro",
+        "34": "Karoline Ramos",
+        "40": "Importador Simplus",
+        "85": "Lilian Gregorio",
+        "89": "Plataforma Simplus",
+        "122": "Rafael Murilo Correa",
+        "169": "Virafilme Alternativo",
+        "184": "Rogério Hoffmann",
+        "233": "Gabriel da Silva",
+        "243": "Julia Porcher da Silva",
+        "246": "Junsang Bae",
+        "258": "Bright River",
+        "259": "Henrique Andrade"
+      }
+    },
+    "cf_134": {
+      "id": 134,
+      "nome": "Responsável Imagem Int",
+      "opcoes": {
+        "15": "Ugo Alencar",
+        "16": "Nelyana Girardi",
+        "34": "Karoline Ramos",
+        "40": "Importador Simplus",
+        "85": "Lilian Gregorio",
+        "89": "Plataforma Simplus",
+        "122": "Rafael Murilo Correa",
+        "169": "Virafilme Alternativo",
+        "184": "Rogério Hoffmann",
+        "233": "Gabriel da Silva",
+        "243": "Julia Porcher da Silva",
+        "246": "Junsang Bae",
+        "258": "Bright River",
+        "259": "Henrique Andrade"
+      }
+    },
+    "cf_152": {
+      "id": 152,
+      "nome": "Motivo Rejeição QA Imagem",
+      "opcoes": {
+        "Data/lote/safra": "Data/lote/safra",
+        "Divergência de cor ": "Divergência de cor&nbsp;",
+        "Edição ": "Edição&nbsp;",
+        "Mockup ": "Mockup&nbsp;",
+        "Recorte ": "Recorte&nbsp;",
+        "Reflexivos": "Reflexivos",
+        "Fotografia": "Fotografia"
+      }
+    },
+    "cf_113": {
+      "id": 113,
+      "nome": "Correção Edição",
+      "opcoes": {
+        "134": "Aguardado Correção",
+        "135": "Concluído",
+        "136": "Sem Pendência"
+      }
+    },
+    "cf_112": {
+      "id": 112,
+      "nome": "Imagens Adicionais",
+      "opcoes": {
+        "132": "Sim",
+        "133": "Não"
+      }
+    },
+    "cf_172": {
+      "id": 172,
+      "nome": "Responsãvel 3º Check Imagem:",
+      "opcoes": {
+        "1": "OneFlow Admin",
+        "5": "Leonardo Rafael Israel",
+        "15": "Ugo Alencar",
+        "16": "Nelyana Girardi",
+        "18": "Gustavo Domeneghetti",
+        "19": "Amanda Weber",
+        "20": "Amanda Rodrigues Schneider",
+        "21": "Marcelo Guerreiro",
+        "31": "Eduarda  Moreira",
+        "34": "Karoline Ramos",
+        "40": "Importador Simplus",
+        "58": "Scheila Quintino",
+        "63": "Rafael Ricardo de Souza de Borba",
+        "68": "Pablo Luiz",
+        "85": "Lilian Gregorio",
+        "89": "Plataforma Simplus",
+        "100": "Daniela Claumann Alegre",
+        "111": "Kevin Pinho Iamin",
+        "122": "Rafael Murilo Correa",
+        "169": "Virafilme Alternativo",
+        "171": "Paulo Edson Heindenreich Junior",
+        "184": "Rogério Hoffmann",
+        "217": "Flávio Demarchi",
+        "233": "Gabriel da Silva",
+        "243": "Julia Porcher da Silva",
+        "246": "Junsang Bae",
+        "254": "Gabriel Steffens",
+        "258": "Bright River",
+        "259": "Henrique Andrade"
+      }
+    },
+    "cf_121": {
+      "id": 121,
+      "nome": "3º Check Imagem",
+      "opcoes": {
+        "0": "Não",
+        "1": "Sim"
+      }
+    },
+    "cf_147": {
+      "id": 147,
+      "nome": "Motivo Rejeição 3º Check",
+      "opcoes": {
+        "178": "Nomenclatura",
+        "179": "Recorte",
+        "180": "Edição",
+        "181": "Divergência de Cor",
+        "182": "Data/Lote/Safra",
+        "183": "Mockup",
+        "184": "Reflexivos",
+        "185": "Orientação"
+      }
+    },
+    "cf_148": {
+      "id": 148,
+      "nome": "Rejeição 3º Check Resolvida",
+      "opcoes": {
+        "0": "Não",
+        "1": "Sim"
+      }
+    },
+    "cf_123": {
+      "id": 123,
+      "nome": "Retrabalho Edição",
+      "opcoes": {
+        "0": "Não",
+        "1": "Sim"
+      }
+    },
+    "cf_164": {
+      "id": 164,
+      "nome": "Reedição",
+      "opcoes": {
+        "230": "Mockup",
+        "231": "Fotografia",
+        "232": "Edição"
+      }
+    },
+    "cf_160": {
+      "id": 160,
+      "nome": "Imagem Automática",
+      "opcoes": {
+        "0": "Não",
+        "1": "Sim"
+      }
+    },
+    "cf_167": {
+      "id": 167,
+      "nome": "Ag. Correção de embalagem",
+      "opcoes": {
+        "0": "Não",
+        "1": "Sim"
+      }
+    },
+    "cf_171": {
+      "id": 171,
+      "nome": "Chamado Aberto",
+      "opcoes": {
+        "0": "Não",
+        "1": "Sim"
+      }
+    },
+    "cf_180": {
+      "id": 180,
+      "nome": "Auditoria - Peso e Medidas",
+      "opcoes": {
+        "245": "Peso",
+        "246": "Medidas",
+        "255": "Ignorado",
+        "256": "Auditado",
+        "257": "Embalagem"
+      }
+    },
+    "cf_181": {
+      "id": 181,
+      "nome": "Auditoria - Ações Realizadas",
+      "opcoes": {
+        "247": "Peso correto",
+        "248": "Peso ajustado",
+        "249": "Medidas corretas",
+        "250": "Medida ajustada",
+        "251": "Informado ao cliente",
+        "258": "Embalagem correta",
+        "259": "Embalagem ajustada"
+      }
+    },
+    "cf_183": {
+      "id": 183,
+      "nome": "Auditoria - Avaliação",
+      "opcoes": {
+        "252": "Em Avaliação",
+        "253": "Regra ajustada",
+        "254": "Ignorado"
+      }
+    }
+  }
+}

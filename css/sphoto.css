@@ -1,0 +1,868 @@
+/* SPhoto - Dark Theme */
+/* ================================================ */
+
+:root {
+    --primary: #1976d2;
+    --success: #28a745;
+    --danger: #dc3545;
+    --warning: #ffc107;
+    --info: #17a2b8;
+    --bg-body: #121212;
+    --bg-card: #1e1e1e;
+    --bg-input: #2a2a2a;
+    --border: #333;
+    --text: #e0e0e0;
+    --text-muted: #888;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text);
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+.d-none { display: none !important; }
+
+/* Header */
+.header {
+    background-color: var(--bg-card);
+    border-bottom: 2px solid var(--primary);
+    padding: 0 20px;
+    height: 56px;
+}
+
+.header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    max-width: 1800px;
+    margin: 0 auto;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo { height: 32px; }
+
+.header-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.connection-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.connection-status i { font-size: 1rem; }
+
+#iconeCamera.camera-ok { color: var(--success, #28a745); }
+#iconeCamera.camera-off { color: var(--danger, #dc3545); }
+#iconeCamera.camera-desligada { color: var(--text-muted); }
+
+.camera-off-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin-left: 4px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    user-select: none;
+}
+
+.camera-off-toggle input { cursor: pointer; margin: 0; }
+
+/* Checkbox OCR - ao lado do conector da camera. Ligado = ao salvar, gera o JPG de OCR
+   do RAW e copia pra pasta do Cadastro. Fica destacado quando ativo pro fotografo nao
+   esquecer que esta despachando pro Cadastro a cada salvada. */
+.ocr-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    user-select: none;
+}
+
+.ocr-toggle input { cursor: pointer; margin: 0; }
+
+.ocr-toggle.ativo {
+    color: #fff;
+    background-color: var(--success);
+    border-color: var(--success);
+}
+
+.user-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.user-info i { font-size: 1.1rem; }
+
+.btn-config {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-config:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background-color: rgba(25, 118, 210, 0.1);
+}
+
+/* Info Boxes */
+.info-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    height: 38px;
+}
+
+.info-label {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.info-value {
+    color: var(--text);
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.isUpdate-label {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    background-color: var(--info);
+    color: white;
+    white-space: nowrap;
+}
+
+/* Cards */
+.card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.card-header {
+    background-color: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.card-header h6,
+.card-title {
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.card-body { padding: 16px; }
+
+/* Tables */
+.table {
+    color: var(--text);
+    margin-bottom: 0;
+}
+
+.table th {
+    background-color: #252525;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+    padding: 8px 12px;
+}
+
+.table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #2a2a2a;
+    font-size: 0.9rem;
+    vertical-align: middle;
+}
+
+.table tbody tr { cursor: pointer; }
+.table tbody tr:hover { background-color: rgba(255, 255, 255, 0.04); }
+
+.table tbody tr.table-active,
+.table tbody tr.ativo {
+    background-color: rgba(25, 118, 210, 0.12) !important;
+    border-left: 3px solid var(--primary);
+}
+
+.table tbody tr.finalizado { opacity: 0.6; }
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+.status-aberto {
+    background-color: #dc3545;
+}
+
+.status-salvo {
+    background-color: #ffc107;
+    color: #1a1a1a;
+}
+
+.status-finalizado {
+    background-color: #28a745;
+}
+
+.status-retrabalho {
+    background-color: #1a1a1a;
+    border: 1px solid #555;
+}
+
+/* Forms */
+.form-control {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 0.9rem;
+    height: 38px;
+}
+
+.form-control:focus {
+    background-color: var(--bg-input);
+    border-color: var(--primary);
+    color: var(--text);
+    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.15);
+}
+
+.form-control::placeholder { color: #666; }
+
+.form-control:read-only {
+    background-color: #222;
+    border-color: #2a2a2a;
+}
+
+textarea.form-control {
+    height: auto;
+    min-height: 38px;
+}
+
+.form-select {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+.form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.15);
+}
+
+.form-check-input:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+/* Checkbox de marcacao (ex: _coding) - maior e destacado, nao e um checkbox comum */
+.check-coding-wrapper {
+    background-color: #333;
+    gap: 6px;
+    padding: 6px 14px;
+}
+
+/* _ocr - mesmo tipo do _coding (sufixo no nome, nao subpasta): marca quais fotos viram
+   JPG pro Cadastro. Convive com RT/IS/AP, por isso fica deste lado e nao junto delas. */
+.check-ocr-wrapper {
+    background-color: #333;
+    gap: 6px;
+    padding: 6px 14px;
+}
+
+#checkOcrFoto {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    border: 2px solid var(--text-muted);
+}
+
+#checkCoding {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    border: 2px solid var(--text-muted);
+}
+
+.input-group-text label[for="checkCoding"] {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.form-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.form-text { font-size: 0.78rem; color: #666; }
+
+/* Input Group */
+.input-group-text {
+    background-color: #252525;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 6px 12px;
+}
+
+.input-group .form-control {
+    border-left: 0;
+}
+
+.input-group .form-control:focus + .input-group-text,
+.input-group .form-control:focus ~ .input-group-text {
+    border-color: var(--primary);
+}
+
+/* Buttons */
+.btn {
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #1565c0;
+    border-color: #1565c0;
+}
+
+.btn-success {
+    background-color: var(--success);
+    border-color: var(--success);
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #218838;
+}
+
+.btn-outline-danger {
+    color: var(--danger);
+    border-color: var(--danger);
+}
+
+.btn-outline-danger:hover {
+    background-color: var(--danger);
+    color: white;
+}
+
+.btn-outline-secondary {
+    color: var(--text-muted);
+    border-color: var(--border);
+}
+
+.btn-outline-secondary:hover {
+    background-color: #333;
+    color: var(--text);
+}
+
+.btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.action-btn {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+}
+
+/* Tabs */
+.nav-tabs {
+    border-bottom: 1px solid var(--border);
+}
+
+.nav-tabs .nav-link {
+    color: var(--text-muted);
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--text);
+    border-bottom-color: #555;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: transparent;
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+.nav-tabs .nav-link.active i { margin-right: 6px; }
+
+/* Grid de miniaturas: tiles fixos 150x150 que quebram linha conforme o espaço disponível */
+#gridAtual,
+#gridAnterior {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#gridAtual > div,
+#gridAnterior > div {
+    flex: 0 0 150px;
+    max-width: 150px;
+    width: 150px;
+}
+
+/* Miniatura (Thumbnail) */
+.miniatura {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: var(--bg-card);
+}
+
+.miniatura:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.miniatura img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    display: block;
+}
+
+.miniatura .btn-deletar {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background-color: rgba(220, 53, 69, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    color: white;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 10;
+}
+
+.miniatura:hover .btn-deletar { opacity: 1; }
+.miniatura .btn-deletar:hover { background-color: var(--danger); }
+
+.miniatura .btn-marcar {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    color: white;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s, background-color 0.2s;
+    z-index: 10;
+}
+
+.miniatura:hover .btn-marcar { opacity: 1; }
+.miniatura .btn-marcar:hover { background-color: var(--primary); }
+
+.miniatura.marcada {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary);
+}
+
+.miniatura.marcada .btn-marcar {
+    opacity: 1;
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+/* Imagem ja marcada com _coding no nome - contorno permanente, independente da selecao atual */
+.miniatura.tem-coding {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 2px #ffc107;
+}
+
+.miniatura.tem-coding.marcada {
+    box-shadow: 0 0 0 2px #ffc107, 0 0 0 4px var(--primary);
+}
+
+/* RT/IS/AP - correcao pontual no palco Anterior, mesmas cores da QA Hub */
+.miniatura.tem-rt { border-color: #fd7e14; box-shadow: 0 0 0 2px #fd7e14; }
+.miniatura.tem-is { border-color: var(--info); box-shadow: 0 0 0 2px var(--info); }
+.miniatura.tem-ap { border-color: #9c27b0; box-shadow: 0 0 0 2px #9c27b0; }
+
+.check-subpasta-wrapper {
+    background-color: #333;
+    gap: 6px;
+    padding: 6px 10px;
+}
+
+.check-subpasta-wrapper input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    border: 2px solid var(--text-muted);
+}
+
+.check-subpasta-wrapper label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 0;
+}
+
+.check-subpasta-wrapper.rt label { color: #fd7e14; }
+.check-subpasta-wrapper.is label { color: var(--info); }
+.check-subpasta-wrapper.ap label { color: #9c27b0; }
+
+/* Legenda de cores - _coding e subpastas RT/IS/AP, mesma paleta da QA Hub */
+.legenda-cores {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 8px 14px;
+    background-color: #252525;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.legenda-cores-item { display: flex; align-items: center; gap: 6px; }
+
+.legenda-cores-cor {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.legenda-cores-cor.coding { background-color: #ffc107; }
+.legenda-cores-cor.rt { background-color: #fd7e14; }
+.legenda-cores-cor.is { background-color: var(--info); }
+.legenda-cores-cor.ap { background-color: #9c27b0; }
+
+/* Miniaturas das subpastas RT/IS/AP (ja movidas) - lado Anterior, so pra
+   conferir/desfazer, bem menor que a miniatura de captura (150px). */
+.subpasta-preview-titulo {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin: 10px 0 6px;
+}
+
+.subpasta-preview-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.subpasta-preview-item { width: 74px; text-align: center; }
+
+.subpasta-preview-item img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.subpasta-preview-item.rt img { border-color: #fd7e14; box-shadow: 0 0 0 1px #fd7e14; }
+.subpasta-preview-item.is img { border-color: var(--info); box-shadow: 0 0 0 1px var(--info); }
+.subpasta-preview-item.ap img { border-color: #9c27b0; box-shadow: 0 0 0 1px #9c27b0; }
+
+.subpasta-preview-item .btn-voltar {
+    display: block;
+    width: 100%;
+    font-size: 0.6rem;
+    margin-top: 3px;
+    padding: 1px 0;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    background-color: var(--bg-input);
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.subpasta-preview-item .btn-voltar:hover {
+    background-color: var(--primary);
+    color: #fff;
+}
+
+/* Grid Empty */
+.grid-empty {
+    text-align: center;
+    padding: 30px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Modal - Fullscreen Image */
+#modalImagem .modal-content {
+    background-color: #0a0a0a;
+}
+
+#modalImagem .modal-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    padding: 12px 16px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+}
+
+#modalImagem .modal-body {
+    padding: 0;
+    background-color: #0a0a0a;
+}
+
+#imgAmpliada {
+    max-width: 100%;
+    max-height: 100vh;
+    object-fit: contain;
+}
+
+.nav-arrows {
+    display: flex;
+    gap: 8px;
+}
+
+.nav-arrows .btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+#modalImagem .modal-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    padding: 12px 16px;
+    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    justify-content: space-between;
+}
+
+.info-imagem {
+    color: #aaa;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.info-imagem .separator {
+    color: #555;
+}
+
+.acoes-imagem {
+    display: flex;
+    gap: 8px;
+}
+
+/* Modal - Config */
+#modalConfig .modal-content {
+    border: 1px solid var(--border);
+}
+
+#modalConfig .modal-header {
+    border-bottom-color: var(--border);
+}
+
+#modalConfig .modal-footer {
+    border-top-color: var(--border);
+}
+
+/* Alert */
+.alert {
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 10px 14px;
+    margin-bottom: 0;
+}
+
+.alert-danger {
+    background-color: rgba(220, 53, 69, 0.12);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    color: #ff6b6b;
+}
+
+.alert-info {
+    background-color: rgba(23, 162, 184, 0.1);
+    border: 1px solid rgba(23, 162, 184, 0.25);
+    color: var(--info);
+}
+
+/* Badge */
+.badge {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 4px 10px;
+}
+
+/* Loading */
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #333;
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Overlay de desconexao - camera e/ou plataforma */
+.disconnect-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.disconnect-overlay-content {
+    text-align: center;
+    color: var(--text);
+    max-width: 420px;
+    padding: 32px;
+}
+
+.disconnect-overlay-content > i {
+    font-size: 3rem;
+    color: var(--danger);
+    margin-bottom: 16px;
+    display: block;
+}
+
+.disconnect-overlay-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-body); }
+::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #555; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header-inner { flex-wrap: wrap; height: auto; padding: 10px 0; gap: 10px; }
+    .header-right { gap: 12px; }
+    .info-box { height: auto; }
+    .action-btn { font-size: 0.85rem; padding: 8px 12px; }
+    .nav-arrows .btn { width: 32px; height: 32px; }
+}

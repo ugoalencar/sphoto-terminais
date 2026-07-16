@@ -1,0 +1,43 @@
+{
+  "_leia_me": [
+    "Config do OCR. O DESTINO PRINCIPAL nao esta aqui de proposito: o JPG de OCR sempre vai",
+    "pra estrutura nativa Finalizadas\\OCR\\OS_<os>\\<gtin> - a mesma que a camera alimentava",
+    "quando ainda gravava JPG. Isso e local, nao depende de rede e nao pode falhar.",
+    "",
+    "Os dois gatilhos:",
+    "  1. Checkbox OCR no topo  -> o trabalho e SO OCR. O CR2 vira JPG na estrutura OCR e e",
+    "     dispensado (nao alimenta Finalizadas\\OS_<os>\\<gtin>).",
+    "  2. Botao OCR no palco Anterior -> o trabalho e edicao E OCR. O CR2 fica no Finalizadas",
+    "     e as fotos escolhidas geram JPG na estrutura OCR.",
+    "",
+    "pastaCadastro abaixo e OPCIONAL: se estiver preenchida E acessivel, o jpg tambem e",
+    "copiado pra la. Se estiver vazia ou fora do ar, o OCR local continua funcionando normal",
+    "- nunca deixa de gerar por causa de rede. Deixe \"\" pra desligar a copia.",
+    "",
+    "O sphoto NAO escreve no Redmine: quem muda 'Foto (OCR)' pra 'Concluido' e o robo do",
+    "Cadastro, depois de subir de verdade. Quem entrega e dono do status."
+  ],
+
+  "pastaCadastro": "\\\\192.168.2.201\\Cadastro\\OCR",
+
+  "_copiarParaCadastro": [
+    "FILA do robo do Cadastro. Existe um terminal proprio pra foto de OCR, mas quando um",
+    "terminal nosso faz esse trabalho, a copia cai aqui e o robo de la trata a demanda.",
+    "",
+    "Nao aponte pra raiz \\\\192.168.2.201\\Cadastro: o robo NAO le de la. Ele consome de",
+    "...\\Cadastro\\OCR (que fica vazia justamente porque ele esvazia) e move o que tratou",
+    "pra ...\\Cadastro\\OCR_BACKUP. O formato OS_<os>\\<gtin>\\ foi confirmado olhando o",
+    "OCR_BACKUP (377 OS ja processadas nesse padrao) - por isso criarPastaOs fica true.",
+    "",
+    "Vazio = so gera local. Se a rede cair, a copia falha mas o OCR local sai do mesmo jeito",
+    "e a tela avisa que NAO foi pro Cadastro."
+  ],
+  "_criarPastaOs": "true = <pastaCadastro>\\OS_<os>\\<gtin>\\ | false = <pastaCadastro>\\<gtin>\\",
+  "criarPastaOs": true,
+
+  "_espelharSubpastas": "true = replica RT/IS/AP no destino. false = jpgs soltos na pasta do gtin.",
+  "espelharSubpastas": false,
+
+  "_sufixoArquivo": "Sufixo opcional no nome do jpg gerado (ex: '_ocr'). Vazio = mesmo nome-base do CR2.",
+  "sufixoArquivo": ""
+}

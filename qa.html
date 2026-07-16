@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPhoto QA Hub</title>
+
+    <script>
+        // Ver comentario equivalente em index.html: aberta como file://, os
+        // fetch() para o servidor local sao bloqueados por CORS sem aviso.
+        if (window.location.protocol === 'file:') {
+            window.location.href = 'http://localhost:3000/qa.html';
+        }
+    </script>
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/sphoto.css">
+    <link rel="stylesheet" href="css/qa.css">
+</head>
+<body>
+    <div id="qaApp">
+        <header class="header">
+            <div class="header-inner">
+                <div class="header-left">
+                    <img src="img/icone.avif" alt="SPhoto" class="logo">
+                    <span class="header-title">SPhoto QA Hub</span>
+                </div>
+                <div class="qa-top-tabs">
+                    <button type="button" class="qa-top-tab-btn" :class="{ ativa: viewAtiva === 'fila' }" @click="viewAtiva = 'fila'">Fila de Envio</button>
+                    <button type="button" class="qa-top-tab-btn" :class="{ ativa: viewAtiva === 'agenda' }" @click="mudarParaAgenda">Agenda de Edição</button>
+                </div>
+                <div class="header-right">
+                    <button v-if="viewAtiva === 'fila'" type="button" class="btn btn-sm btn-outline-light" @click="carregarArvore" :disabled="carregandoArvore">
+                        <i class="bi bi-arrow-clockwise"></i> Atualizar lista
+                    </button>
+                    <button v-else type="button" class="btn btn-sm btn-outline-light" @click="carregarAgenda" :disabled="carregandoAgenda">
+                        <i class="bi bi-arrow-clockwise" :class="{ 'qa-girando': carregandoAgenda }"></i> Atualizar agenda
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Agenda de Edicao: painel cheio, sem o par arvore/detalhe -->
+        <div class="qa-agenda" v-show="viewAtiva === 'agenda'">
+            <div v-if="carregandoAgenda && agenda.length === 0" class="qa-vazio">Carregando agenda...</div>
+            <div v-else-if="erroAgenda" class="text-danger p-3">{{ erroAgenda }}</div>
+            <div v-else-if="agenda.length === 0" class="qa-vazio">
+                Nada em edição com previsão de entrega a partir de hoje.
+            </div>
+            <table v-else class="qa-agenda-tabela">
+                <thead>
+                    <tr>
+                        <th>OS</th>
+                        <th>GTIN</th>
+                        <th>Produto</th>
+                        <th>Fotos (Recorte + Mockup)</th>
+                        <th>Previsão de Entrega</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="item in agenda" :key="item.issueId">
+                        <td>{{ item.os || '-' }}</td>
+                        <td>{{ item.gtin }}</td>
+                        <td>{{ item.produto }}</td>
+                        <td>{{ item.totalFotos }}</td>
+                        <td>
+                            <span v-if="item.previsaoEntrega">{{ item.previsaoEntrega }}</span>
+                            <span v-else class="text-muted">sem previsão</span>
+                            <span v-if="item.origemPrevisao" class="qa-previsao-origem" :class="item.origemPrevisao">
+                                {{ item.origemPrevisao === 'pos_producao' ? 'pós-produção' : 'prazo geral' }}
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="qa-layout" v-show="viewAtiva === 'fila'">
+            <!-- Arvore OS -> GTIN, pendentes de envio -->
+            <aside class="qa-arvore">
+                <div v-if="carregandoArvore" class="qa-vazio">Carregando...</div>
+                <div v-else-if="erroArvore" class="text-danger p-2">{{ erroArvore }}</div>
+                <div v-else-if="arvore.length === 0" class="qa-vazio">
+                    Nenhuma OS pendente de envio.
+                </div>
+                <div v-else>
+                    <div class="qa-os-grupo" v-for="grupo in arvore" :key="grupo.os">
+                        <div class="qa-os-titulo">
+                            <span>OS {{ grupo.os }} ({{ grupo.gtins.length }})</span>
+                            <button
+                                type="button"
+                                class="qa-os-enviar-btn"
+                                :disabled="enviandoConferenciaOs === grupo.os"
+                                title="Enviar todos os GTINs pendentes desta OS pra conferência de uma vez"
+                                @click.stop="enviarOsParaConferencia(grupo.os)"
+                            >
+                                <i class="bi bi-cloud-upload"></i> Enviar OS
+                            </button>
+                        </div>
+                        <div v-if="mensagemConferenciaOs[grupo.os]" class="qa-conferencia-status sucesso qa-os-status">{{ mensagemConferenciaOs[grupo.os] }}</div>
+                        <div v-if="erroConferenciaOs[grupo.os]" class="qa-conferencia-status erro qa-os-status">{{ erroConferenciaOs[grupo.os] }}</div>
+                        <div
+                            class="qa-gtin-item"
+                            v-for="item in grupo.gtins"
+                            :key="item.gtin"
+                            :class="{ ativo: gtinSelecionado && gtinSelecionado.os === grupo.os && gtinSelecionado.gtin === item.gtin }"
+                            @click="selecionarGtin(grupo.os, item.gtin)"
+                        >
+                            <span>{{ item.gtin }}</span>
+                            <span class="qa-destino-badge" :class="'qa-destino-' + item.destinoInferido">{{ item.destinoInferido }}</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Detalhe do GTIN selecionado -->
+            <main class="qa-detalhe">
+                <div v-if="!gtinSelecionado" class="qa-vazio">
+                    Selecione um GTIN na lista ao lado.
+                </div>
+
+                <div v-else>
+                    <h5 class="mb-3">
+                        GTIN {{ gtinSelecionado.gtin }}
+                        <small class="text-muted">- OS {{ gtinSelecionado.os }}</small>
+                    </h5>
+
+                    <div class="qa-tabs">
+                        <button class="qa-tab-btn" :class="{ ativa: abaAtiva === 'foto' }" @click="abaAtiva = 'foto'">QA de Foto</button>
+                        <button class="qa-tab-btn" :class="{ ativa: abaAtiva === 'edicao' }" @click="abaAtiva = 'edicao'">QA para Edição</button>
+                        <button class="qa-tab-btn" :class="{ ativa: abaAtiva === 'pos-edicao' }" @click="abaAtiva = 'pos-edicao'">QA Pós-Edição</button>
+                    </div>
+
+                    <div v-if="carregandoDetalhe" class="qa-vazio">Carregando pasta...</div>
+
+                    <template v-else-if="detalhe">
+                        <!-- Aba QA de Foto: organizar arquivos, sem mexer no Redmine -->
+                        <div v-show="abaAtiva === 'foto'">
+                            <div class="qa-legenda">
+                                <span class="qa-legenda-item"><span class="qa-legenda-cor coding"></span> _coding (referência de edição)</span>
+                                <span class="qa-legenda-item"><span class="qa-legenda-cor rt"></span> RT - Rótulo</span>
+                                <span class="qa-legenda-item"><span class="qa-legenda-cor is"></span> IS - Insumos</span>
+                                <span class="qa-legenda-item"><span class="qa-legenda-cor ap"></span> AP - Apoio</span>
+                            </div>
+
+                            <div class="qa-destino-manual">
+                                <span class="qa-destino-manual-label">Tipo de pós-produção:</span>
+                                <button type="button" class="qa-destino-btn recorte" :class="{ ativa: 'Recorte' in detalhe.imagens.subpastas }" :disabled="marcandoDestino" @click="marcarDestinoManual('Recorte')">Recorte <small>(Bright River)</small></button>
+                                <button type="button" class="qa-destino-btn mockup" :class="{ ativa: 'Mockup' in detalhe.imagens.subpastas }" :disabled="marcandoDestino" @click="marcarDestinoManual('Mockup')">Mockup <small>(Virafilme/Best Image)</small></button>
+                            </div>
+
+                            <div class="qa-enviar-conferencia">
+                                <button type="button" class="btn btn-outline-light btn-sm" :disabled="finalizando" @click="finalizarGtin" title="Fallback pra quando o fotógrafo esqueceu de clicar Finalizar no index.html - grava Situação = Aguardando QA Fotografia">
+                                    <i class="bi bi-check2-circle"></i> Finalizar
+                                </button>
+                                <button type="button" class="btn btn-primary btn-sm" :disabled="enviandoConferencia" @click="enviarParaConferencia">
+                                    <i class="bi bi-cloud-upload"></i> Enviar para Conferência (nuvem)
+                                </button>
+                                <span v-if="detalhe.enviadoConferencia" class="qa-conferencia-status ja-enviado">já enviado antes pelo robô</span>
+                                <span v-if="mensagemFinalizar" class="qa-conferencia-status sucesso">{{ mensagemFinalizar }}</span>
+                                <span v-if="erroFinalizar" class="qa-conferencia-status erro">{{ erroFinalizar }}</span>
+                                <span v-if="mensagemConferencia" class="qa-conferencia-status sucesso">{{ mensagemConferencia }}</span>
+                                <span v-if="erroConferencia" class="qa-conferencia-status erro">{{ erroConferencia }}</span>
+                            </div>
+
+                            <div class="qa-subpasta-titulo">Raiz ({{ detalhe.imagens.raiz.length }})</div>
+                            <div class="qa-grid">
+                                <div class="qa-miniatura-wrap" v-for="img in detalhe.imagens.raiz" :key="img.nome">
+                                    <div class="qa-miniatura" :class="{ 'tem-coding': img.temCoding }">
+                                        <img :src="'data:image/jpeg;base64,' + img.arquivo" :alt="img.nome">
+                                    </div>
+                                    <div class="qa-miniatura-nome" :title="img.nome">{{ nomeCurto(img.nome) }}</div>
+                                    <div class="qa-acoes-mini">
+                                        <button type="button" class="qa-acao-mini coding" :class="{ ativa: img.temCoding }" title="Marcar/desmarcar _coding" @click="toggleCoding(img)">C</button>
+                                        <button type="button" class="qa-acao-mini rt" title="Mover para Rótulo" @click="toggleSubpasta(img.nome, 'RT')">RT</button>
+                                        <button type="button" class="qa-acao-mini is" title="Mover para Insumos" @click="toggleSubpasta(img.nome, 'IS')">IS</button>
+                                        <button type="button" class="qa-acao-mini ap" title="Mover para Apoio" @click="toggleSubpasta(img.nome, 'AP')">AP</button>
+                                        <button type="button" class="qa-acao-mini ocr" :disabled="gerandoOcr" title="Gera o JPG de OCR desta foto (a partir do RAW) e copia pra fila do Cadastro. A foto continua onde está." @click="gerarOcr(img.nome)">OCR</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <template v-for="tag in ['RT', 'IS', 'AP', 'Mockup', 'Recorte']" :key="tag">
+                                <template v-if="detalhe.imagens.subpastas[tag] && detalhe.imagens.subpastas[tag].length">
+                                    <div class="qa-subpasta-titulo">{{ tag }} ({{ detalhe.imagens.subpastas[tag].length }})</div>
+                                    <div class="qa-grid">
+                                        <div class="qa-miniatura-wrap" v-for="img in detalhe.imagens.subpastas[tag]" :key="img.nome">
+                                            <div class="qa-miniatura" :class="'tem-' + tag.toLowerCase()">
+                                                <img :src="'data:image/jpeg;base64,' + img.arquivo" :alt="img.nome">
+                                            </div>
+                                            <div class="qa-miniatura-nome" :title="img.nome">{{ nomeCurto(img.nome) }}</div>
+                                            <div class="qa-acoes-mini" v-if="['RT','IS','AP'].includes(tag)">
+                                                <button type="button" class="qa-acao-mini voltar" title="Tirar da subpasta" @click="toggleSubpasta(img.nome, tag)">Voltar p/ raiz</button>
+                                                <button type="button" class="qa-acao-mini ocr" :disabled="gerandoOcr" title="Gera o JPG de OCR desta foto (a partir do RAW) e copia pra fila do Cadastro. A foto continua na subpasta." @click="gerarOcr(img.nome)">OCR</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                        </div>
+
+                        <!-- Aba QA de Edicao: pre-preenche e escreve no Redmine -->
+                        <div v-show="abaAtiva === 'edicao'">
+                            <div v-if="detalhe.destinoInferido === 'indefinido'" class="qa-conflito-aviso">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                Não foi possível inferir o destino automaticamente: {{ detalhe.motivoIndefinido }}.
+                                Preencha os campos manualmente.
+                            </div>
+
+                            <div v-if="!detalhe.issue" class="qa-conflito-aviso">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                Nenhuma ficha aberta encontrada no Redmine para este GTIN.
+                            </div>
+
+                            <template v-else>
+                                <div v-if="conflito" class="qa-conflito-aviso">
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                    A ficha foi alterada no Redmine desde que esta tela foi aberta ({{ conflito.error }}).
+                                    <button class="btn btn-sm btn-outline-danger ms-2" @click="confirmarEnvio(true)">Enviar mesmo assim</button>
+                                    <button class="btn btn-sm btn-outline-secondary ms-2" @click="selecionarGtin(gtinSelecionado.os, gtinSelecionado.gtin)">Recarregar ficha</button>
+                                </div>
+
+                                <div class="qa-campo-linha">
+                                    <span class="qa-campo-label">Situação das Imagens</span>
+                                    <select class="form-select form-select-sm w-auto" v-model="campos['15']" @change="marcarTocado('15')">
+                                        <option v-for="(rotulo, id) in opcoesSituacao" :key="id" :value="id">{{ rotulo }}</option>
+                                    </select>
+                                    <span class="qa-campo-origem" :class="origemCampo['15']">{{ origemCampo['15'] }}</span>
+                                </div>
+
+                                <div class="qa-campo-linha">
+                                    <span class="qa-campo-label">Responsável Pós-Produção</span>
+                                    <select class="form-select form-select-sm w-auto" v-model="campos['23']" @change="marcarTocado('23')">
+                                        <option value="">-</option>
+                                        <option v-for="(rotulo, id) in opcoesResponsavel" :key="id" :value="id">{{ rotulo }}</option>
+                                    </select>
+                                    <span class="qa-campo-origem" :class="origemCampo['23']">{{ origemCampo['23'] }}</span>
+                                </div>
+
+                                <div class="qa-campo-linha">
+                                    <span class="qa-campo-label">Qtd Imagens Recorte</span>
+                                    <input type="number" class="form-control form-control-sm w-auto" style="width:100px" v-model="campos['176']" @input="marcarTocado('176')">
+                                    <span class="qa-campo-origem" :class="origemCampo['176']">{{ origemCampo['176'] }}</span>
+                                </div>
+
+                                <div class="qa-campo-linha">
+                                    <span class="qa-campo-label">Qtd Imagens Mockup</span>
+                                    <input type="number" class="form-control form-control-sm w-auto" style="width:100px" v-model="campos['175']" @input="marcarTocado('175')">
+                                    <span class="qa-campo-origem" :class="origemCampo['175']">{{ origemCampo['175'] }}</span>
+                                </div>
+
+                                <button class="btn btn-primary mt-3" :disabled="enviando" @click="confirmarEnvio(false)">
+                                    <i class="bi bi-cloud-upload"></i> Confirmar e enviar ao Redmine
+                                </button>
+                                <span v-if="mensagem" class="ms-3 text-success">{{ mensagem }}</span>
+                                <span v-if="erroEnvio" class="ms-3 text-danger">{{ erroEnvio }}</span>
+                            </template>
+                        </div>
+
+                        <!-- Aba QA Pos-Edicao: fotos ja editadas voltando do editor (bucket EditingDone),
+                             etapa separada da QA para Edicao (que e a aprovacao PRE-edicao) -->
+                        <div v-show="abaAtiva === 'pos-edicao'">
+                            <div class="qa-editadas-recebidas">
+                                <div class="qa-editadas-header">
+                                    <span>Fotos Editadas Recebidas</span>
+                                    <button type="button" class="btn btn-outline-light btn-sm" @click="iniciarRecebimentoQaEdicao" :disabled="iniciandoRecebimento">
+                                        <i class="bi bi-play-circle"></i> Iniciar robô de recebimento
+                                    </button>
+                                </div>
+                                <div v-if="detalhe.editadasRecebidas" class="qa-editadas-lista">
+                                    <div class="text-muted mb-1">{{ detalhe.editadasRecebidas.arquivos.length }} arquivo(s) em "{{ detalhe.editadasRecebidas.pastaNome }}"</div>
+                                    <ul>
+                                        <li v-for="nome in detalhe.editadasRecebidas.arquivos" :key="nome">{{ nome }}</li>
+                                    </ul>
+                                </div>
+                                <div v-else class="qa-vazio-inline">Nada recebido ainda pra este GTIN (pasta AguardandoQA).</div>
+                                <span v-if="mensagemRecebimento" class="qa-conferencia-status sucesso">{{ mensagemRecebimento }}</span>
+                                <span v-if="erroRecebimento" class="qa-conferencia-status erro">{{ erroRecebimento }}</span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/vue.global.js"></script>
+    <script src="js/qa.js"></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+node_modules/
+redmine-config.json
+
+# Dados reais de producao (fotos de produtos/clientes) e capturas locais - nao sao codigo
+Finalizadas/
+images/
+
+# Binarios de terceiros e arquivos grandes - redistribuidos separadamente, nao versionados
+simplusCameraLib/
+sphoto.rar
+start.jar
+
+# Pagina de referencia salva do Redmine (nao e codigo do app)
+QA/
+GTIN #317836_*.html
+
+# Fotos reais de produto que ficaram soltas em img/ (nao sao asset de UI)
+img/7896181713630_*.JPG
+
+# Instancia local do syncIMG (binario de terceiros, copia do jar) e fotos reais
+# recebidas do editor pra QA de Edicao
+syncimg-qa-edicao/syncIMG.jar
+AguardandoQA/
+
+# Log de execucao do servidor (gerado em runtime, nao e codigo)
+logs/
+
+# Perfil de navegador dedicado do SPhoto (criado pelo launcher.js em runtime)
+.perfil-navegador/

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPhoto - Estúdio Fotográfico</title>
+
+    <script>
+        // Se a pagina foi aberta direto do arquivo (file://), redireciona para
+        // http://localhost:3000 - aberta como arquivo, o navegador bloqueia por
+        // CORS as chamadas fetch() para o servidor local e os botoes da interface
+        // (reconectar camera/sistema) param de funcionar sem nenhum aviso.
+        if (window.location.protocol === 'file:') {
+            window.location.href = 'http://localhost:3000/index.html';
+        }
+    </script>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="css/bootstrap-icons.css">
+    
+    <!-- CSS Customizado -->
+    <link rel="stylesheet" href="css/sphoto.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-inner">
+                <div class="header-left">
+                    <img src="img/icone.avif" alt="SPhoto" class="logo">
+                    <span class="header-title">Syndigo Photo</span>
+                </div>
+                <div class="header-right">
+                    <span class="connection-status" id="statusCamera">
+                        <i class="bi bi-camera-video-fill" id="iconeCamera"></i>
+                        <span id="statusCameraTexto">Câmera desconectada</span>
+                        <label class="camera-off-toggle" title="Marcar câmera como desligada - não avisa nem bloqueia a tela por falta de câmera">
+                            <input type="checkbox" id="checkCameraOff"> Off
+                        </label>
+                    </span>
+                    <label class="ocr-toggle" id="labelOcr" title="Ao salvar, gera o JPG de OCR a partir do RAW e copia pra pasta do Cadastro (OS_xxxx\GTIN). Não mexe no Redmine - quem muda o status é o robô do Cadastro.">
+                        <input type="checkbox" id="checkOcr"> OCR
+                    </label>
+                    <span class="connection-status" id="statusConexao">
+                        <i class="bi bi-cloud-check" id="iconeConexao"></i>
+                        <span id="statusTexto">Conectado</span>
+                    </span>
+                    <span class="user-info">
+                        <i class="bi bi-person-circle"></i>
+                        <span id="nomeUsuario">Usuário</span>
+                    </span>
+                    <button type="button" class="btn-config" data-bs-toggle="modal" data-bs-target="#modalConfig">
+                        <i class="bi bi-gear-fill"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Loading Spinner -->
+        <div class="loading-overlay d-none" id="loadingOverlay">
+            <div class="loading-spinner"></div>
+        </div>
+
+        <!-- Overlay de desconexao (camera e/ou plataforma) -->
+        <div class="disconnect-overlay d-none" id="overlayDesconexao">
+            <div class="disconnect-overlay-content">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <h4 id="overlayDesconexaoTitulo">Sistema desconectado</h4>
+                <div class="disconnect-overlay-actions">
+                    <button type="button" class="btn btn-outline-light d-none" id="btnReconectarCamera">
+                        <i class="bi bi-camera-video-fill"></i> Reconectar Câmera
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary d-none" id="btnCameraOffOverlay">
+                        <i class="bi bi-camera-video-off"></i> Usar sem câmera
+                    </button>
+                    <button type="button" class="btn btn-outline-light d-none" id="btnReconectarSistema">
+                        <i class="bi bi-cloud-arrow-up-fill"></i> Reconectar Sistema
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error/Message -->
+        <div class="container-fluid px-4 pt-3">
+            <div class="alert alert-danger d-none" id="errorMessage" role="alert">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span id="errorText"></span>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container-fluid px-4">
+                <!-- Row 1: GTIN Search + Product Description -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
+                            <input type="text" class="form-control" id="inputGtin" placeholder="Digite o GTIN">
+                            <button class="btn btn-primary" id="btnBuscar" type="button">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="info-box">
+                            <span class="isUpdate-label d-none" id="isUpdateLabel">Cadastro Novo</span>
+                            <span class="info-label">Produto:</span>
+                            <span class="info-value" id="descricaoProduto">...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Layout principal - Esquerda (Imagens) + Direita (GTINs) -->
+                <div class="row g-3 mb-3">
+                    <!-- Coluna Esquerda: Imagens -->
+                    <div class="col-md-8">
+                        <!-- Atual (Sessão atual) -->
+                        <div class="card mb-3">
+                            <div class="card-header py-2">
+                                <h6 class="card-title mb-0"><i class="bi bi-camera"></i> Atual</h6>
+                            </div>
+                            <div class="card-body p-2">
+                                <div class="row g-2" id="gridAtual">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Anterior (Já salvo) -->
+                        <div class="card">
+                            <div class="card-header py-2">
+                                <h6 class="card-title mb-0"><i class="bi bi-images"></i> Anterior</h6>
+                            </div>
+                            <div class="card-body p-2">
+                                <div class="legenda-cores">
+                                    <span class="legenda-cores-item"><span class="legenda-cores-cor coding"></span> _coding (pós-produção Bright River)</span>
+                                    <span class="legenda-cores-item"><span class="legenda-cores-cor rt"></span> RT - Rótulo</span>
+                                    <span class="legenda-cores-item"><span class="legenda-cores-cor is"></span> IS - Insumos</span>
+                                    <span class="legenda-cores-item"><span class="legenda-cores-cor ap"></span> AP - Apoio</span>
+                                </div>
+                                <div class="row g-2" id="gridAnterior">
+                                </div>
+                                <div id="subpastasAnterior"></div>
+                            </div>
+                        </div>
+
+                        <!-- Obs -->
+                        <div class="input-group mt-3">
+                            <span class="input-group-text"><i class="bi bi-text-left"></i> Obs</span>
+                            <textarea class="form-control" id="inputObs" rows="1" placeholder="Observações sobre o GTIN"></textarea>
+                            <span class="input-group-text check-coding-wrapper">
+                                <input class="form-check-input mt-0 me-1" type="checkbox" id="checkCoding" title="Adiciona _coding no nome das imagens marcadas">
+                                <label class="mb-0" for="checkCoding">_coding</label>
+                            </span>
+                            <span class="input-group-text check-ocr-wrapper">
+                                <input class="form-check-input mt-0 me-1" type="checkbox" id="checkOcrFoto" title="Gera o JPG de OCR das imagens marcadas no palco Anterior (a partir do RAW), na estrutura Finalizadas\OCR\OS_xxxx\GTIN. Use quando o trabalho é edição E OCR - o RAW continua no Finalizadas. Se o trabalho for SÓ OCR, use o checkbox OCR do topo (que dispensa o RAW).">
+                                <label class="mb-0" for="checkOcrFoto">OCR</label>
+                            </span>
+                            <span class="input-group-text check-subpasta-wrapper rt">
+                                <input class="form-check-input mt-0 me-1" type="checkbox" id="checkRT" title="Move as imagens marcadas (aba Anterior) pra subpasta RT - correção pontual">
+                                <label for="checkRT">RT</label>
+                            </span>
+                            <span class="input-group-text check-subpasta-wrapper is">
+                                <input class="form-check-input mt-0 me-1" type="checkbox" id="checkIS" title="Move as imagens marcadas (aba Anterior) pra subpasta IS - correção pontual">
+                                <label for="checkIS">IS</label>
+                            </span>
+                            <span class="input-group-text check-subpasta-wrapper ap">
+                                <input class="form-check-input mt-0 me-1" type="checkbox" id="checkAP" title="Move as imagens marcadas (aba Anterior) pra subpasta AP - correção pontual">
+                                <label for="checkAP">AP</label>
+                            </span>
+                        </div>
+
+                        <!-- Botões de ação -->
+                        <div class="row g-3 mt-1">
+                            <div class="col">
+                                <button class="btn btn-success btn-lg w-100 action-btn" id="btnSalvar">
+                                    <i class="bi bi-save-fill"></i> Salvar
+                                </button>
+                            </div>
+                            <div class="col">
+                                <button class="btn btn-primary btn-lg w-100 action-btn" id="btnFinalizar">
+                                    <i class="bi bi-check-circle-fill"></i> Finalizar
+                                </button>
+                            </div>
+                            <div class="col">
+                                <button class="btn btn-outline-danger btn-lg w-100 action-btn" id="btnLimpar">
+                                    <i class="bi bi-trash3"></i> Limpar TEMP
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coluna Direita: GTINs -->
+                    <div class="col-md-4">
+                        <!-- OS + Qtde -->
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">OS</span>
+                                    <input type="text" class="form-control" id="inputOs" readonly>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">Qtde</span>
+                                    <input type="text" class="form-control" id="inputQtdeGtin" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Listagem GTINs -->
+                        <div class="card">
+                            <div class="card-header py-2">
+                                <h6 class="card-title mb-0"><i class="bi bi-list-ul"></i> GTINs da OS</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                    <table class="table table-hover table-sm mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>GTIN</th>
+                                                <th>Descrição</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="listaGtins">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal de Ampliação -->
+    <div class="modal fade" id="modalImagem" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content bg-dark">
+                <div class="modal-header border-0">
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="nav-arrows">
+                        <button type="button" class="btn btn-outline-light btn-sm" id="btnAnterior">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-light btn-sm" id="btnProxima">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body d-flex align-items-center justify-content-center p-0">
+                    <img src="" alt="" id="imgAmpliada">
+                </div>
+                <div class="modal-footer border-0">
+                    <div class="info-imagem">
+                        <span id="infoNome">...</span>
+                        <span class="separator">|</span>
+                        <span id="infoResolucao">...</span>
+                        <span class="separator">|</span>
+                        <span id="infoTamanho">...</span>
+                        <span class="separator">|</span>
+                        <span id="infoData">...</span>
+                    </div>
+                    <div class="acoes-imagem">
+                        <button type="button" class="btn btn-outline-danger btn-sm" id="btnDeletar">
+                            <i class="bi bi-trash3"></i> Deletar
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="btnBaixar">
+                            <i class="bi bi-download"></i> Baixar
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="btnCopiar">
+                            <i class="bi bi-clipboard"></i> URL
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Configuração -->
+    <div class="modal fade" id="modalConfig" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-gear-fill"></i> Configuração</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="selectPerfil" class="form-label">Perfil</label>
+                        <select class="form-select" id="selectPerfil">
+                            <option value="estudio">Estúdio</option>
+                            <option value="cadastro">Cadastro</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="inputArquivoConfig" class="form-label">Arquivo de Configuração JSON</label>
+                        <input type="file" class="form-control" id="inputArquivoConfig" accept=".json">
+                        <div class="form-text">Selecione o arquivo fotoEstudiougo.json ou similar</div>
+                    </div>
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Arquivo atual:</strong> <span id="arquivoConfigAtual">Nenhum arquivo selecionado</span>
+                    </div>
+
+                    <div class="border-top pt-3">
+                        <label class="form-label">Manutenção</label>
+                        <button type="button" class="btn btn-outline-warning w-100" id="btnScanOsNone">
+                            <i class="bi bi-search"></i> Verificar OS_NONE
+                        </button>
+                        <div class="form-text">Consulta o Redmine pra cada GTIN parado em OS_NONE e move pra OS real quando ela ja existir.</div>
+                        <div id="resultadoScanOsNone" class="mt-2"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="btnSalvarConfig">
+                        <i class="bi bi-check-lg"></i> Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="js/vue.global.js"></script>
+    
+    <!-- Aplicação -->
+    <script src="js/app.js"></script>
+</body>
+</html>
