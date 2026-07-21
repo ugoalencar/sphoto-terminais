@@ -1,7 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { exec, spawn } = require('child_process');
+const { exec, spawn, execSync } = require('child_process');
 const crypto = require('crypto');
 const qaHub = require('./lib/qaHub');
 const ocrCadastro = require('./lib/ocrCadastro');
@@ -695,6 +695,53 @@ const server = http.createServer((req, res) => {
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ versao: !err && stdout.trim() ? stdout.trim() : 'dev' }));
         });
+        return;
+    }
+
+    // So compara HEAD local com origin/main (git fetch, sem baixar/aplicar nada) -
+    // alimenta o sininho do header e a tela de config.
+    if (req.url === '/api/atualizacao/verificar') {
+        try {
+            execSync('git fetch origin main --tags', { cwd: BASE_PATH, stdio: 'pipe' });
+            const commitsAtras = parseInt(execSync('git rev-list HEAD..origin/main --count', { cwd: BASE_PATH }).toString().trim(), 10) || 0;
+            const versaoAtual = execSync('git describe --tags --always', { cwd: BASE_PATH }).toString().trim();
+            const versaoDisponivel = execSync('git describe --tags --always origin/main', { cwd: BASE_PATH }).toString().trim();
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: true, versaoAtual, versaoDisponivel, temAtualizacao: commitsAtras > 0 }));
+        } catch (err) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: false, error: 'Nao foi possivel consultar atualizacoes (sem rede ou esta pasta nao e um repositorio git)' }));
+        }
+        return;
+    }
+
+    // Traz o codigo novo com "git pull --ff-only" - nunca cria merge/resolve
+    // conflito sozinho, entao se a pasta tiver alteracao local nao commitada ou o
+    // historico tiver divergido, aborta e devolve erro em vez de arriscar quebrar
+    // a pasta. server.js/lib/* rodam dentro do processo Node (carregados uma vez no
+    // start) - se mudaram, precisa reiniciar; o resto (html/css/js do navegador) e
+    // servido fresco do disco a cada request, so precisa Ctrl+Shift+R.
+    if (req.method === 'POST' && req.url === '/api/atualizacao/aplicar') {
+        try {
+            const statusSujo = execSync('git status --porcelain', { cwd: BASE_PATH }).toString().trim();
+            if (statusSujo) {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'Ha alteracoes locais nao commitadas nesta pasta - resolva manualmente (git status) antes de atualizar' }));
+                return;
+            }
+            const antes = execSync('git rev-parse HEAD', { cwd: BASE_PATH }).toString().trim();
+            execSync('git pull --ff-only origin main', { cwd: BASE_PATH, stdio: 'pipe' });
+            const depois = execSync('git rev-parse HEAD', { cwd: BASE_PATH }).toString().trim();
+            const arquivosMudados = antes === depois ? [] : execSync('git diff --name-only ' + antes + ' ' + depois, { cwd: BASE_PATH })
+                .toString().trim().split('\n').filter(Boolean);
+            const precisaReiniciar = arquivosMudados.some((f) => f === 'server.js' || f.startsWith('lib/'));
+            const versaoAtual = execSync('git describe --tags --always', { cwd: BASE_PATH }).toString().trim();
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: true, jaEstavaAtualizado: antes === depois, versaoAtual, arquivosMudados, precisaReiniciar }));
+        } catch (err) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: false, error: 'git pull falhou: ' + (err.message || String(err)).slice(0, 500) }));
+        }
         return;
     }
 

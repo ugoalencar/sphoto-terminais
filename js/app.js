@@ -1272,6 +1272,8 @@ const app = createApp({
 
             document.getElementById('btnSalvarConfig').addEventListener('click', salvarConfig);
             document.getElementById('btnScanOsNone').addEventListener('click', escanearOsNone);
+            document.getElementById('btnVerificarAtualizacao').addEventListener('click', verificarAtualizacao);
+            document.getElementById('btnAplicarAtualizacao').addEventListener('click', aplicarAtualizacao);
 
             // Destaca o checkbox OCR quando ligado - o fotografo tem que enxergar que cada
             // salvada esta despachando pro Cadastro.
@@ -1368,8 +1370,71 @@ const app = createApp({
                 .then(function(dados) {
                     var el = document.getElementById('headerVersao');
                     if (el) el.textContent = dados.versao;
+                    var elConfig = document.getElementById('versaoInstaladaTexto');
+                    if (elConfig) elConfig.textContent = '(' + dados.versao + ')';
                 })
                 .catch(function() { /* header segue sem versao, nao e critico */ });
+        }
+
+        // Consulta o git (fetch, sem baixar/aplicar nada) pra saber se ha commit novo
+        // em origin/main - acende o sininho no header sem precisar abrir a Config.
+        function verificarAtualizacao() {
+            var resultadoEl = document.getElementById('resultadoAtualizacao');
+            var btnAplicar = document.getElementById('btnAplicarAtualizacao');
+            var sino = document.getElementById('btnAtualizacaoDisponivel');
+            if (resultadoEl) resultadoEl.innerHTML = '<span class="text-muted">Consultando...</span>';
+
+            fetch('http://localhost:3000/api/atualizacao/verificar')
+                .then(function(resp) { return resp.json(); })
+                .then(function(dados) {
+                    if (!dados.ok) {
+                        if (resultadoEl) resultadoEl.innerHTML = '<span class="text-danger">' + dados.error + '</span>';
+                        return;
+                    }
+                    if (dados.temAtualizacao) {
+                        if (resultadoEl) resultadoEl.innerHTML = '<span class="text-warning">Nova versão disponível: ' + dados.versaoDisponivel + ' (atual: ' + dados.versaoAtual + ')</span>';
+                        if (btnAplicar) btnAplicar.classList.remove('d-none');
+                        if (sino) sino.classList.remove('d-none');
+                    } else {
+                        if (resultadoEl) resultadoEl.innerHTML = '<span class="text-success">Já está na versão mais recente (' + dados.versaoAtual + ').</span>';
+                        if (btnAplicar) btnAplicar.classList.add('d-none');
+                        if (sino) sino.classList.add('d-none');
+                    }
+                })
+                .catch(function(err) {
+                    if (resultadoEl) resultadoEl.innerHTML = '<span class="text-danger">Erro ao verificar: ' + err.message + '</span>';
+                });
+        }
+
+        function aplicarAtualizacao() {
+            var btn = document.getElementById('btnAplicarAtualizacao');
+            var resultadoEl = document.getElementById('resultadoAtualizacao');
+            if (btn) btn.disabled = true;
+            if (resultadoEl) resultadoEl.innerHTML = '<span class="text-muted">Atualizando...</span>';
+
+            fetch('http://localhost:3000/api/atualizacao/aplicar', { method: 'POST' })
+                .then(function(resp) { return resp.json(); })
+                .then(function(dados) {
+                    if (!dados.ok) {
+                        if (resultadoEl) resultadoEl.innerHTML = '<span class="text-danger">' + dados.error + '</span>';
+                        return;
+                    }
+                    var msg = 'Atualizado para ' + dados.versaoAtual + '.';
+                    msg += dados.precisaReiniciar
+                        ? ' <strong>Reinicie o SPhoto pelo atalho pra aplicar</strong> (mudou arquivo do servidor).'
+                        : ' Aperte Ctrl+Shift+R pra recarregar a tela.';
+                    if (resultadoEl) resultadoEl.innerHTML = '<span class="text-success">' + msg + '</span>';
+                    if (btn) btn.classList.add('d-none');
+                    var sino = document.getElementById('btnAtualizacaoDisponivel');
+                    if (sino) sino.classList.add('d-none');
+                    carregarVersao();
+                })
+                .catch(function(err) {
+                    if (resultadoEl) resultadoEl.innerHTML = '<span class="text-danger">Erro ao atualizar: ' + err.message + '</span>';
+                })
+                .finally(function() {
+                    if (btn) btn.disabled = false;
+                });
         }
 
         function carregarConfigLocal() {
@@ -1451,6 +1516,7 @@ const app = createApp({
 
         onMounted(function() {
             carregarVersao();
+            verificarAtualizacao();
             carregarConfigLocal();
             conectarWebSocket();
             configurarEventListeners();

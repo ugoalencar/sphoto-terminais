@@ -53,6 +53,9 @@
                         <i class="bi bi-person-circle"></i>
                         <span id="nomeUsuario">Usuário</span>
                     </span>
+                    <button type="button" class="btn-config d-none" id="btnAtualizacaoDisponivel" data-bs-toggle="modal" data-bs-target="#modalConfig" title="Atualização disponível">
+                        <i class="bi bi-bell-fill text-warning"></i>
+                    </button>
                     <button type="button" class="btn-config" data-bs-toggle="modal" data-bs-target="#modalConfig">
                         <i class="bi bi-gear-fill"></i>
                     </button>
@@ -316,6 +319,17 @@
                         </button>
                         <div class="form-text">Consulta o Redmine pra cada GTIN parado em OS_NONE e move pra OS real quando ela ja existir.</div>
                         <div id="resultadoScanOsNone" class="mt-2"></div>
+                    </div>
+
+                    <div class="border-top pt-3 mt-3">
+                        <label class="form-label">Atualização <span id="versaoInstaladaTexto" class="text-muted"></span></label>
+                        <button type="button" class="btn btn-outline-info w-100" id="btnVerificarAtualizacao">
+                            <i class="bi bi-arrow-repeat"></i> Verificar atualização
+                        </button>
+                        <button type="button" class="btn btn-success w-100 mt-2 d-none" id="btnAplicarAtualizacao">
+                            <i class="bi bi-cloud-download"></i> Atualizar agora
+                        </button>
+                        <div id="resultadoAtualizacao" class="mt-2"></div>
                     </div>
                 </div>
                 <div class="modal-footer">
