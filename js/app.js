@@ -1362,6 +1362,16 @@ const app = createApp({
             });
         }
 
+        function carregarVersao() {
+            fetch('http://localhost:3000/api/versao')
+                .then(function(resp) { return resp.json(); })
+                .then(function(dados) {
+                    var el = document.getElementById('headerVersao');
+                    if (el) el.textContent = dados.versao;
+                })
+                .catch(function() { /* header segue sem versao, nao e critico */ });
+        }
+
         function carregarConfigLocal() {
             var regra = localStorage.getItem('regra');
             var userId = localStorage.getItem('user_id');
@@ -1440,6 +1450,7 @@ const app = createApp({
         }
 
         onMounted(function() {
+            carregarVersao();
             carregarConfigLocal();
             conectarWebSocket();
             configurarEventListeners();

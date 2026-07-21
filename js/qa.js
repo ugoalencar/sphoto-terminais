@@ -1,4 +1,4 @@
-const { createApp, ref, reactive, onMounted } = Vue;
+const { createApp, ref, reactive, onMounted, nextTick } = Vue;
 
 const CAMPOS_IDS = ['15', '23', '176', '175'];
 const API = 'http://localhost:3000';
@@ -31,12 +31,10 @@ createApp({
         const enviandoConferenciaOs = ref(null); // os que esta enviando agora, ou null
         const mensagemConferenciaOs = reactive({});
         const erroConferenciaOs = reactive({});
-        const iniciandoRecebimento = ref(false);
-        const mensagemRecebimento = ref('');
-        const erroRecebimento = ref('');
 
         const opcoesSituacao = ref({});
         const opcoesResponsavel = ref({});
+        const versaoSphoto = ref('');
 
         const campos = reactive({});
         const origemCampo = reactive({});
@@ -45,6 +43,20 @@ createApp({
         const enviando = ref(false);
         const mensagem = ref('');
         const erroEnvio = ref('');
+
+        // Ampliacao de miniatura (mesmo modal #modalImagem do index.html) - listaAmpliada
+        // guarda o array (raiz ou uma subpasta) de onde a imagem veio, pra dar pra
+        // navegar com as setas sem sair do grupo que o usuario estava olhando.
+        const imagemAmpliada = ref(null);
+        const listaAmpliada = ref([]);
+
+        async function carregarVersao() {
+            try {
+                const resp = await fetch(API + '/api/versao');
+                const dados = await resp.json();
+                versaoSphoto.value = dados.versao;
+            } catch (err) { /* header segue sem versao, nao e critico */ }
+        }
 
         async function carregarOpcoesRedmine() {
             try {
@@ -378,26 +390,6 @@ createApp({
             }
         }
 
-        // Liga a instancia propria do syncIMG (dentro do sphoto) que fica de olho no
-        // bucket EditingDone e traz o que o editor ja terminou pra AguardandoQA. So
-        // precisa ser ligada uma vez (fica rodando) - ver syncimg-qa-edicao/ini.conf.
-        async function iniciarRecebimentoQaEdicao() {
-            if (iniciandoRecebimento.value) return;
-            iniciandoRecebimento.value = true;
-            mensagemRecebimento.value = '';
-            erroRecebimento.value = '';
-            try {
-                const resp = await fetch(API + '/api/qa/iniciar-recebimento-qa-edicao', { method: 'POST' });
-                const dados = await resp.json();
-                if (!resp.ok) throw new Error(dados.error || ('HTTP ' + resp.status));
-                mensagemRecebimento.value = 'Robô de recebimento acionado - acompanhe a pasta AguardandoQA.';
-            } catch (err) {
-                erroRecebimento.value = 'Erro ao iniciar robô: ' + err.message;
-            } finally {
-                iniciandoRecebimento.value = false;
-            }
-        }
-
         async function confirmarEnvio(forcar) {
             if (!detalhe.value || !detalhe.value.issue) return;
             enviando.value = true;
@@ -443,13 +435,40 @@ createApp({
             }
         }
 
+        function ampliarImagem(img, lista) {
+            imagemAmpliada.value = img;
+            listaAmpliada.value = lista;
+            nextTick(() => {
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('modalImagem')).show();
+            });
+        }
+
+        function navegarAmpliada(delta) {
+            if (!imagemAmpliada.value || !listaAmpliada.value.length) return;
+            const idx = listaAmpliada.value.findIndex(i => i.nome === imagemAmpliada.value.nome);
+            const total = listaAmpliada.value.length;
+            imagemAmpliada.value = listaAmpliada.value[(idx + delta + total) % total];
+        }
+
         onMounted(() => {
+            carregarVersao();
             carregarOpcoesRedmine();
             carregarArvore();
+
+            document.getElementById('modalImagem').addEventListener('hidden.bs.modal', () => {
+                imagemAmpliada.value = null;
+                listaAmpliada.value = [];
+            });
+            document.addEventListener('keydown', (e) => {
+                if (!imagemAmpliada.value) return;
+                if (e.key === 'ArrowLeft') navegarAmpliada(-1);
+                if (e.key === 'ArrowRight') navegarAmpliada(1);
+            });
         });
 
         return {
             nomeCurto,
+            versaoSphoto,
             viewAtiva, mudarParaAgenda,
             agenda, carregandoAgenda, erroAgenda, carregarAgenda,
             arvore, carregandoArvore, erroArvore, carregarArvore,
@@ -461,9 +480,9 @@ createApp({
             finalizando, mensagemFinalizar, erroFinalizar, finalizarGtin,
             enviandoConferencia, mensagemConferencia, erroConferencia, enviarParaConferencia,
             enviandoConferenciaOs, mensagemConferenciaOs, erroConferenciaOs, enviarOsParaConferencia,
-            iniciandoRecebimento, mensagemRecebimento, erroRecebimento, iniciarRecebimentoQaEdicao,
             gerandoOcr, gerarOcr,
-            selecionarGtin, toggleCoding, toggleSubpasta, confirmarEnvio
+            selecionarGtin, toggleCoding, toggleSubpasta, confirmarEnvio,
+            imagemAmpliada, ampliarImagem, navegarAmpliada
         };
     }
 }).mount('#qaApp');

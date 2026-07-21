@@ -58,6 +58,15 @@ body {
     color: var(--text);
 }
 
+.header-versao {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    background-color: rgba(255, 255, 255, 0.08);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
 .header-right {
     display: flex;
     align-items: center;

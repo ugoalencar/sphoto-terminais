@@ -686,6 +686,18 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // Versao exibida no header (tag git da pasta rodando agora) - le direto do git a
+    // cada chamada, sem etapa de build. Sem remote configurado nesta pasta (normal
+    // aqui no terminal), "git describe" ainda funciona local - cai em 'dev' so se
+    // nao for repositorio git de jeito nenhum.
+    if (req.url === '/api/versao') {
+        exec('git describe --tags --always', { cwd: BASE_PATH }, (err, stdout) => {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ versao: !err && stdout.trim() ? stdout.trim() : 'dev' }));
+        });
+        return;
+    }
+
     // O processo simplusCamera.exe fica de pe mesmo depois que a camera fisica e
     // desligada/desconectada (ele nao morre sozinho) - checar so o processo (tasklist)
     // faz o status ficar preso em "conectada" pra sempre depois da primeira conexao.

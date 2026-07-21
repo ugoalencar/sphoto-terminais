@@ -25,6 +25,7 @@
                 <div class="header-left">
                     <img src="img/icone.avif" alt="SPhoto" class="logo">
                     <span class="header-title">SPhoto QA Hub</span>
+                    <span class="header-versao">{{ versaoSphoto }}</span>
                 </div>
                 <div class="qa-top-tabs">
                     <button type="button" class="qa-top-tab-btn" :class="{ ativa: viewAtiva === 'fila' }" @click="viewAtiva = 'fila'">Fila de Envio</button>
@@ -129,7 +130,6 @@
                     <div class="qa-tabs">
                         <button class="qa-tab-btn" :class="{ ativa: abaAtiva === 'foto' }" @click="abaAtiva = 'foto'">QA de Foto</button>
                         <button class="qa-tab-btn" :class="{ ativa: abaAtiva === 'edicao' }" @click="abaAtiva = 'edicao'">QA para Edição</button>
-                        <button class="qa-tab-btn" :class="{ ativa: abaAtiva === 'pos-edicao' }" @click="abaAtiva = 'pos-edicao'">QA Pós-Edição</button>
                     </div>
 
                     <div v-if="carregandoDetalhe" class="qa-vazio">Carregando pasta...</div>
@@ -167,7 +167,7 @@
                             <div class="qa-subpasta-titulo">Raiz ({{ detalhe.imagens.raiz.length }})</div>
                             <div class="qa-grid">
                                 <div class="qa-miniatura-wrap" v-for="img in detalhe.imagens.raiz" :key="img.nome">
-                                    <div class="qa-miniatura" :class="{ 'tem-coding': img.temCoding }">
+                                    <div class="qa-miniatura" :class="{ 'tem-coding': img.temCoding }" @click="ampliarImagem(img, detalhe.imagens.raiz)">
                                         <img :src="'data:image/jpeg;base64,' + img.arquivo" :alt="img.nome">
                                     </div>
                                     <div class="qa-miniatura-nome" :title="img.nome">{{ nomeCurto(img.nome) }}</div>
@@ -186,7 +186,7 @@
                                     <div class="qa-subpasta-titulo">{{ tag }} ({{ detalhe.imagens.subpastas[tag].length }})</div>
                                     <div class="qa-grid">
                                         <div class="qa-miniatura-wrap" v-for="img in detalhe.imagens.subpastas[tag]" :key="img.nome">
-                                            <div class="qa-miniatura" :class="'tem-' + tag.toLowerCase()">
+                                            <div class="qa-miniatura" :class="'tem-' + tag.toLowerCase()" @click="ampliarImagem(img, detalhe.imagens.subpastas[tag])">
                                                 <img :src="'data:image/jpeg;base64,' + img.arquivo" :alt="img.nome">
                                             </div>
                                             <div class="qa-miniatura-nome" :title="img.nome">{{ nomeCurto(img.nome) }}</div>
@@ -257,31 +257,36 @@
                                 <span v-if="erroEnvio" class="ms-3 text-danger">{{ erroEnvio }}</span>
                             </template>
                         </div>
-
-                        <!-- Aba QA Pos-Edicao: fotos ja editadas voltando do editor (bucket EditingDone),
-                             etapa separada da QA para Edicao (que e a aprovacao PRE-edicao) -->
-                        <div v-show="abaAtiva === 'pos-edicao'">
-                            <div class="qa-editadas-recebidas">
-                                <div class="qa-editadas-header">
-                                    <span>Fotos Editadas Recebidas</span>
-                                    <button type="button" class="btn btn-outline-light btn-sm" @click="iniciarRecebimentoQaEdicao" :disabled="iniciandoRecebimento">
-                                        <i class="bi bi-play-circle"></i> Iniciar robô de recebimento
-                                    </button>
-                                </div>
-                                <div v-if="detalhe.editadasRecebidas" class="qa-editadas-lista">
-                                    <div class="text-muted mb-1">{{ detalhe.editadasRecebidas.arquivos.length }} arquivo(s) em "{{ detalhe.editadasRecebidas.pastaNome }}"</div>
-                                    <ul>
-                                        <li v-for="nome in detalhe.editadasRecebidas.arquivos" :key="nome">{{ nome }}</li>
-                                    </ul>
-                                </div>
-                                <div v-else class="qa-vazio-inline">Nada recebido ainda pra este GTIN (pasta AguardandoQA).</div>
-                                <span v-if="mensagemRecebimento" class="qa-conferencia-status sucesso">{{ mensagemRecebimento }}</span>
-                                <span v-if="erroRecebimento" class="qa-conferencia-status erro">{{ erroRecebimento }}</span>
-                            </div>
-                        </div>
                     </template>
                 </div>
             </main>
+        </div>
+
+        <!-- Modal de Ampliacao - mesmo id/estilo do index.html (css/sphoto.css ja cobre) -->
+        <div class="modal fade" id="modalImagem" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-fullscreen">
+                <div class="modal-content bg-dark">
+                    <div class="modal-header border-0">
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <div class="nav-arrows">
+                            <button type="button" class="btn btn-outline-light btn-sm" @click="navegarAmpliada(-1)">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-light btn-sm" @click="navegarAmpliada(1)">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-body d-flex align-items-center justify-content-center p-0">
+                        <img v-if="imagemAmpliada" :src="'data:image/jpeg;base64,' + imagemAmpliada.arquivo" :alt="imagemAmpliada.nome" id="imgAmpliada">
+                    </div>
+                    <div class="modal-footer border-0">
+                        <div class="info-imagem">
+                            <span>{{ imagemAmpliada ? imagemAmpliada.nome : '' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
