@@ -25,6 +25,7 @@ const app = createApp({
             imagensMarcadas: [],
             imagensMarcadasAnterior: [],
             subpastasAnterior: { RT: [], IS: [], AP: [] },
+            retrabalhoRecebido: null,
 
             observacoes: '',
 
@@ -613,6 +614,23 @@ const app = createApp({
                 });
         }
 
+        function buscarRetrabalhoRecebido() {
+            var query = new URLSearchParams({
+                os: estado.osAtual,
+                gtin: estado.gtinAtual
+            });
+            fetch('http://localhost:3000/api/retrabalho?' + query.toString())
+                .then(function(resp) { return resp.json(); })
+                .then(function(dados) {
+                    if (!dados || !dados.ok) return;
+                    estado.retrabalhoRecebido = dados.retrabalho;
+                    renderizarPainelRetrabalho();
+                })
+                .catch(function(err) {
+                    console.error('Erro ao buscar retrabalho recebido (server.js rodando?):', err);
+                });
+        }
+
         function salvarLocalmente(obs) {
             var checkOcr = document.getElementById('checkOcr');
             var body = {
@@ -1026,6 +1044,43 @@ const app = createApp({
             }
         }
 
+        function renderizarPainelRetrabalho() {
+            const painel = document.getElementById('painelRetrabalho');
+            if (!painel) return;
+
+            const dado = estado.retrabalhoRecebido;
+            if (!dado) {
+                painel.classList.add('d-none');
+                return;
+            }
+            painel.classList.remove('d-none');
+
+            const lista = document.getElementById('listaMotivosRetrabalho');
+            lista.innerHTML = '';
+            if (dado.motivos && dado.motivos.length > 0) {
+                dado.motivos.forEach(function(motivo) {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+                    li.textContent = motivo;
+                    lista.appendChild(li);
+                });
+            } else {
+                lista.innerHTML = '<li class="list-group-item text-muted">Nenhum motivo registrado no TXT pra este GTIN.</li>';
+            }
+
+            const grid = document.getElementById('gridRetrabalho');
+            grid.innerHTML = '';
+            (dado.fotos || []).forEach(function(foto) {
+                const col = document.createElement('div');
+                col.className = 'col-md-3 col-sm-4 col-6 mb-3';
+                const miniatura = document.createElement('div');
+                miniatura.className = 'miniatura';
+                miniatura.innerHTML = '<img src="data:image/jpeg;base64,' + foto.arquivo + '" alt="' + (foto.nome || 'Imagem') + '">';
+                col.appendChild(miniatura);
+                grid.appendChild(col);
+            });
+        }
+
         function criarMiniatura(imagem, tipo, index) {
             const col = document.createElement('div');
             col.className = 'col-md-3 col-sm-4 col-6 mb-3';
@@ -1249,10 +1304,15 @@ const app = createApp({
                 estado.descricaoProduto = gtin.descricao;
                 estado.imagensAnterior = [];
                 ultimoEtagAnterior = null;
+                estado.retrabalhoRecebido = null;
+                renderizarPainelRetrabalho();
 
                 document.getElementById('inputGtin').value = gtin.gtin;
 
                 buscarImagensOS();
+                if (gtin.status === 'retrabalho') {
+                    buscarRetrabalhoRecebido();
+                }
                 atualizarDOM();
             }
         }
@@ -1522,6 +1582,7 @@ const app = createApp({
             configurarEventListeners();
             renderizarListaGtins();
             renderizarMiniaturas();
+            renderizarPainelRetrabalho();
         });
 
         onUnmounted(function() {
