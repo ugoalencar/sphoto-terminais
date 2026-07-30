@@ -443,6 +443,9 @@ const app = createApp({
                             return g.gtin === estado.gtinAtual;
                         });
                         estado.gtinAtivoIndex = idxAtivo;
+                        if (idxAtivo >= 0 && estado.listaGtins[idxAtivo].status === 'retrabalho') {
+                            buscarRetrabalhoRecebido();
+                        }
                     }
 
                     // Buscar imagens do palco Atual (temp) e do palco Anterior (pasta OS/GTIN)
@@ -455,6 +458,8 @@ const app = createApp({
                     estado.osAtual = 'NONE';
                     estado.listaGtins = [];
                     estado.imagensAnterior = [];
+                    estado.retrabalhoRecebido = null;
+                    renderizarPainelRetrabalho();
                     // Sem isso o rotulo fica preso mostrando a situacao de ANTES de
                     // finalizar (ex.: "Aguardando Fotografia"), ja que so e atualizado
                     // numa nova busca de GTIN (GET_GTIN), nao na resposta do ACAO.
@@ -746,6 +751,8 @@ const app = createApp({
             estado.gtinAtual = gtin;
             estado.gtinAtivoIndex = -1;
             estado.imagensAnterior = [];
+            estado.retrabalhoRecebido = null;
+            renderizarPainelRetrabalho();
             ultimoEtagAnterior = null;
             renderizarMiniaturas();
             estado.carregando = true;
