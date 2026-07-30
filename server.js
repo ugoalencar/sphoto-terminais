@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const qaHub = require('./lib/qaHub');
 const ocrCadastro = require('./lib/ocrCadastro');
 const cr2Preview = require('./lib/cr2Preview');
+const retrabalhoRecebido = require('./lib/retrabalhoRecebido');
 
 // So loga antes de encerrar - depois de um erro nao tratado o processo fica em
 // estado indefinido (ex: falhou o listen() da porta), entao NAO deve continuar
@@ -1082,6 +1083,31 @@ const server = http.createServer((req, res) => {
 
         res.writeHead(200, { 'Content-Type': 'application/json', 'ETag': assinatura });
         res.end(JSON.stringify({ imagens: listarImagensAnterior(os, gtin) }));
+        return;
+    }
+
+    // Retrabalho recebido de volta do QA (pasta que a regra RECEIVER do syncIMG.jar
+    // entrega em C:\SyncIMGSend\Retrabalho) - mostra pro fotografo quais fotos/motivos
+    // precisam ser refeitos antes dele recapturar. So aparece quando ha dado de verdade;
+    // ausencia (regra RECEIVER nao instalada, ou retrabalho ainda nao chegou) nao e erro.
+    if (req.url.startsWith('/api/retrabalho')) {
+        const query = new URL(req.url, 'http://localhost').searchParams;
+        const os = query.get('os') || '';
+        const gtin = query.get('gtin') || '';
+
+        if (!isNomeSeguro(os) || !isNomeSeguro(gtin)) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: false, error: 'Parametros os/gtin invalidos' }));
+            return;
+        }
+
+        const encontrado = retrabalhoRecebido.buscarRetrabalhoRecebido(os, gtin);
+        const retrabalho = encontrado
+            ? { motivos: encontrado.motivos, fotos: listarImagensBase64(encontrado.pastaGtinPath) }
+            : null;
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: true, retrabalho }));
         return;
     }
 
