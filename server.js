@@ -371,7 +371,7 @@ async function salvarImagens(dados) {
             // que so renomeia e NUNCA chamava copiarParaCadastro - o OCR nunca chegava
             // no Cadastro quando a foto era JPG puro.
             if (modoOcr && ehJpg) {
-                const recompressao = await imagemOcr.recomprimirParaOcr(origem);
+                const recompressao = await imagemOcr.recomprimirParaOcr(origem, cfgOcr.qualidadeJpgOcr);
                 if (!recompressao.ok) {
                     console.error('Modo OCR: falha ao recomprimir', nomeArquivo, '-', recompressao.motivo, '- arquivo mantido na temp');
                     continue;
