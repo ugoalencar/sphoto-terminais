@@ -367,7 +367,7 @@ async function salvarImagens(dados) {
             // Modo OCR + JPG puro (sem RAW par - camera sem RAW ou RAW-only desligado pra
             // essa foto): nao tem preview leve embutido pra extrair, entao recomprime de
             // verdade (mesma resolucao, qualidade menor) - mesmo efeito de peso que o
-            // branch do RAW acima. Sem isso esse arquivo caia no bloco generico debaixo,
+            // branch do RAW acima. Sem isso esse arquivo cai no bloco generico debaixo,
             // que so renomeia e NUNCA chamava copiarParaCadastro - o OCR nunca chegava
             // no Cadastro quando a foto era JPG puro.
             if (modoOcr && ehJpg) {
