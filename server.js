@@ -534,6 +534,48 @@ function consultarGtinRedmine(gtin, regraTemplate) {
     });
 }
 
+// Renomeia arquivos de uma pasta de GTIN para o padrao GTIN_dd_MM_yyyy_HH_mm_ss_indice.ext
+// Usado antes de mover de OS_NONE pra OS_x - sem isso os arquivos ficam com nome arbitrario
+// e nao aparecem corretamente no QA nem geram OCR. Arquivos ja padronizados nao sao mexidos.
+function renomearArquivosGtin(pastaGtin, gtin) {
+    if (!fs.existsSync(pastaGtin)) return 0;
+
+    const prefixoGtin = new RegExp('^' + gtin + '_\\d{2}_\\d{2}_\\d{4}_\\d{2}_\\d{2}_\\d{2}_(\\d+)');
+    let proximoIndice = 0;
+
+    const arquivos = fs.readdirSync(pastaGtin)
+        .filter(nome => fs.statSync(path.join(pastaGtin, nome)).isFile());
+
+    // Descobre o proximo indice livre a partir dos arquivos que ja seguem o padrao.
+    arquivos.forEach(nome => {
+        const match = nome.match(prefixoGtin);
+        if (match) {
+            proximoIndice = Math.max(proximoIndice, parseInt(match[1], 10) + 1);
+        }
+    });
+
+    let renomeados = 0;
+    // Renomeia so os que NAO seguem o padrao, ordenados por data de modificacao.
+    arquivos
+        .filter(nome => !PADRAO_NOME_NORMALIZADO.test(nome))
+        .sort((a, b) => {
+            const mtimeA = fs.statSync(path.join(pastaGtin, a)).mtimeMs;
+            const mtimeB = fs.statSync(path.join(pastaGtin, b)).mtimeMs;
+            return mtimeA - mtimeB;
+        })
+        .forEach(nome => {
+            const origem = path.join(pastaGtin, nome);
+            const mtime = fs.statSync(origem).mtime;
+            const ext = obterExtensao(nome);
+            const novoNome = gtin + '_' + formatarTimestamp(mtime) + '_' + proximoIndice + ext;
+            fs.renameSync(origem, path.join(pastaGtin, novoNome));
+            proximoIndice++;
+            renomeados++;
+        });
+
+    return renomeados;
+}
+
 // Move (copia + confere tamanho + apaga a origem) uma pasta de GTIN inteira.
 function moverPastaGtin(origem, destino) {
     if (!fs.existsSync(origem)) return 0;
@@ -587,10 +629,41 @@ async function escanearOsNone() {
                 continue;
             }
 
+            // PASSO 1: Renomeia arquivos em ambas as pastas (OCR e RAW) para o padrao
+            // GTIN_dd_MM_yyyy_HH_mm_ss_indice.ext ANTES de mover. Sem isso os arquivos
+            // chegam com nome arbitrario na OS_x e nao aparecem corretamente no QA.
+            const renomeadosOcr = renomearArquivosGtin(path.join(pastaOcrNone, gtin), gtin);
+            const renomeadosRaw = renomearArquivosGtin(path.join(pastaRawNone, gtin), gtin);
+
+            // PASSO 2: Move as pastas (agora com nomes padronizados) para OS_x.
             const movidosOcr = moverPastaGtin(path.join(pastaOcrNone, gtin), path.join(PASTA_FINALIZADAS, 'OCR', 'OS_' + os, gtin));
             const movidosRaw = moverPastaGtin(path.join(pastaRawNone, gtin), path.join(PASTA_FINALIZADAS, 'OS_' + os, gtin));
 
-            resultado.push({ gtin, status: 'movido', os, arquivos: movidosOcr + movidosRaw });
+            // PASSO 3: Gera OCR automaticamente para todos os arquivos RAW movidos.
+            // Isso cria os JPGs leves em OCR\OS_x\gtin (se ainda nao existirem do lado OCR)
+            // e copia pra pasta Cadastro automaticamente (se configurado em ocr-config.json).
+            let ocrInfo = null;
+            if (movidosRaw > 0) {
+                try {
+                    const resultadoOcr = await ocrCadastro.gerarOcr(os, gtin, []);
+                    ocrInfo = {
+                        gerados: resultadoOcr.gerados.length,
+                        falhas: resultadoOcr.falhas.length,
+                        cadastro: resultadoOcr.cadastro.copiados
+                    };
+                } catch (errOcr) {
+                    ocrInfo = { erro: errOcr.message };
+                }
+            }
+
+            resultado.push({
+                gtin,
+                status: 'movido',
+                os,
+                renomeados: renomeadosOcr + renomeadosRaw,
+                arquivos: movidosOcr + movidosRaw,
+                ocr: ocrInfo
+            });
         } catch (err) {
             resultado.push({ gtin, status: 'erro', erro: err.message });
         }

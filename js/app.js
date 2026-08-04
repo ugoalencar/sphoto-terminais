@@ -299,7 +299,22 @@ const app = createApp({
 
             const linhas = resultado.map(function(item) {
                 if (item.status === 'movido') {
-                    return '<div class="text-success">' + item.gtin + ' → movido pra OS_' + item.os + ' (' + item.arquivos + ' arquivos)</div>';
+                    var detalhes = [];
+                    if (item.renomeados > 0) {
+                        detalhes.push(item.renomeados + ' renomeados');
+                    }
+                    detalhes.push(item.arquivos + ' movidos');
+                    if (item.ocr) {
+                        if (item.ocr.erro) {
+                            detalhes.push('<span class="text-warning">OCR: ' + item.ocr.erro + '</span>');
+                        } else {
+                            detalhes.push(item.ocr.gerados + ' OCR gerados');
+                            if (item.ocr.cadastro > 0) {
+                                detalhes.push(item.ocr.cadastro + ' → Cadastro');
+                            }
+                        }
+                    }
+                    return '<div class="text-success">' + item.gtin + ' → OS_' + item.os + ' (' + detalhes.join(', ') + ')</div>';
                 }
                 if (item.status === 'erro') {
                     return '<div class="text-danger">' + item.gtin + ' → erro: ' + item.erro + '</div>';
