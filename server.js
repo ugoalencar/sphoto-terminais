@@ -394,21 +394,42 @@ async function salvarImagens(dados) {
                 continue;
             }
 
-            // JPG puro (sem modo OCR) e RAW: ambos vao pro lado RAW (Finalizadas\OS_x\gtin).
-            // JPG sem modo OCR antes ia so pra estrutura OCR e sumia do QA/palco Anterior -
-            // agora e tratado igual ao CR2 (mora no lado RAW, gera OCR sob demanda depois).
+            // JPG puro (sem modo OCR): vai pro lado RAW E gera versao OCR automaticamente.
+            // Diferente do CR2 (que so extrai preview sob demanda), o JPG precisa gerar OCR
+            // na hora de salvar porque camera sem RAW precisa alimentar a estrutura OCR igual
+            // a camera com RAW faz (preview embutido do CR2 ja esta la, nao precisa gerar).
+            if (ehJpg && pastaRawGtin) {
+                const nomeArquivoFinal = dados.gtin + '_' + timestamp + '_' + contadorJpg + sufixosExtras + ext;
+                const destinoRaw = path.join(pastaDestinoRaw, nomeArquivoFinal);
+
+                // Move o JPG original pro lado RAW
+                try {
+                    fs.renameSync(origem, destinoRaw);
+                } catch (err) {
+                    if (err.code !== 'EXDEV') throw err;
+                    fs.copyFileSync(origem, destinoRaw);
+                    fs.unlinkSync(origem);
+                }
+
+                // Gera a versao OCR (recomprimida) e salva no lado OCR
+                const recompressao = await imagemOcr.recomprimirParaOcr(destinoRaw, cfgOcr.qualidadeJpgOcr);
+                if (recompressao.ok) {
+                    const destinoOcr = path.join(pastaDestinoJpg, nomeArquivoFinal);
+                    fs.writeFileSync(destinoOcr, recompressao.buffer);
+                } else {
+                    console.error('Falha ao gerar OCR de', nomeArquivoFinal, '-', recompressao.motivo);
+                }
+
+                contadorJpg++;
+                movidos++;
+                continue;
+            }
+
+            // RAW e outros arquivos
             let destino;
             if (ehJpg) {
-                // JPG orfao (sem RAW par): vai pro lado RAW igual ao CR2. A geracao de OCR
-                // (recompressao) acontece depois, quando o usuario pedir (botao OCR do Anterior
-                // ou QA Hub), igual acontece com o CR2 (extracao do preview embutido).
-                if (pastaRawGtin) {
-                    destino = path.join(pastaDestinoRaw, dados.gtin + '_' + timestamp + '_' + contadorJpg + sufixosExtras + ext);
-                    contadorJpg++;
-                } else {
-                    // Perfil nao-estudio ou modo OCR desligado no ultimo momento: descarta.
-                    continue;
-                }
+                // JPG sem pastaRawGtin (perfil nao-estudio): descarta
+                continue;
             } else if (pastaRawGtin) {
                 destino = path.join(pastaDestinoRaw, dados.gtin + '_' + timestamp + '_' + contadorRaw + sufixosExtras + ext);
                 contadorRaw++;
