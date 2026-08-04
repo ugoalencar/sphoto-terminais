@@ -402,22 +402,30 @@ async function salvarImagens(dados) {
                 const nomeArquivoFinal = dados.gtin + '_' + timestamp + '_' + contadorJpg + sufixosExtras + ext;
                 const destinoRaw = path.join(pastaDestinoRaw, nomeArquivoFinal);
 
-                // Move o JPG original pro lado RAW
+                // IMPORTANTE: Primeiro copia o JPG original (da temp) pro lado RAW, preservando
+                // a qualidade maxima. Depois recomprime ESSE arquivo pro lado OCR. Se fizesse
+                // o contrario (recomprimir primeiro), o lado RAW ficaria com qualidade reduzida.
                 try {
-                    fs.renameSync(origem, destinoRaw);
-                } catch (err) {
-                    if (err.code !== 'EXDEV') throw err;
                     fs.copyFileSync(origem, destinoRaw);
-                    fs.unlinkSync(origem);
+                } catch (err) {
+                    console.error('Falha ao copiar JPG original para', destinoRaw, '-', err.message);
+                    continue;
                 }
 
-                // Gera a versao OCR (recomprimida) e salva no lado OCR
+                // Gera a versao OCR (recomprimida) a partir do JPG original que acabou de copiar
                 const recompressao = await imagemOcr.recomprimirParaOcr(destinoRaw, cfgOcr.qualidadeJpgOcr);
                 if (recompressao.ok) {
                     const destinoOcr = path.join(pastaDestinoJpg, nomeArquivoFinal);
                     fs.writeFileSync(destinoOcr, recompressao.buffer);
                 } else {
                     console.error('Falha ao gerar OCR de', nomeArquivoFinal, '-', recompressao.motivo);
+                }
+
+                // So agora apaga da temp (depois de copiar pro RAW e gerar o OCR)
+                try {
+                    fs.unlinkSync(origem);
+                } catch (err) {
+                    console.error('Falha ao apagar temp:', origem, '-', err.message);
                 }
 
                 contadorJpg++;
