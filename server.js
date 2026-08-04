@@ -394,10 +394,21 @@ async function salvarImagens(dados) {
                 continue;
             }
 
+            // JPG puro (sem modo OCR) e RAW: ambos vao pro lado RAW (Finalizadas\OS_x\gtin).
+            // JPG sem modo OCR antes ia so pra estrutura OCR e sumia do QA/palco Anterior -
+            // agora e tratado igual ao CR2 (mora no lado RAW, gera OCR sob demanda depois).
             let destino;
             if (ehJpg) {
-                destino = path.join(pastaDestinoJpg, dados.gtin + '_' + timestamp + '_' + contadorJpg + sufixosExtras + ext);
-                contadorJpg++;
+                // JPG orfao (sem RAW par): vai pro lado RAW igual ao CR2. A geracao de OCR
+                // (recompressao) acontece depois, quando o usuario pedir (botao OCR do Anterior
+                // ou QA Hub), igual acontece com o CR2 (extracao do preview embutido).
+                if (pastaRawGtin) {
+                    destino = path.join(pastaDestinoRaw, dados.gtin + '_' + timestamp + '_' + contadorJpg + sufixosExtras + ext);
+                    contadorJpg++;
+                } else {
+                    // Perfil nao-estudio ou modo OCR desligado no ultimo momento: descarta.
+                    continue;
+                }
             } else if (pastaRawGtin) {
                 destino = path.join(pastaDestinoRaw, dados.gtin + '_' + timestamp + '_' + contadorRaw + sufixosExtras + ext);
                 contadorRaw++;
