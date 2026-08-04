@@ -1,4 +1,3 @@
-node_modules/
 redmine-config.json
 
 # Dados reais de producao (fotos de produtos/clientes) e capturas locais - nao sao codigo

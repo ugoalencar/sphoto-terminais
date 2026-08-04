@@ -5,6 +5,7 @@ const { exec, spawn, execSync } = require('child_process');
 const crypto = require('crypto');
 const qaHub = require('./lib/qaHub');
 const ocrCadastro = require('./lib/ocrCadastro');
+const imagemOcr = require('./lib/imagemOcr');
 const cr2Preview = require('./lib/cr2Preview');
 const retrabalhoRecebido = require('./lib/retrabalhoRecebido');
 
@@ -276,7 +277,7 @@ function garantirPasta(caminho) {
 // Replica o Controller.finalizar() do start.jar: separa os JPGs da pasta temp
 // para OCR/OS_<os>/<gtin> e (perfil estudio) o restante (RAW) para OS_<os>/<gtin>,
 // gravando a observacao num .txt quando presente. Tudo local, sem falar com o backend Java.
-function salvarImagens(dados) {
+async function salvarImagens(dados) {
     const pastaBase = PASTA_FINALIZADAS;
     const perfilEstudio = (dados.perfil || '').trim().toLowerCase() === 'estudio';
     const timestamp = formatarTimestamp(new Date());
@@ -315,9 +316,9 @@ function salvarImagens(dados) {
     const resumoCadastro = { copiados: 0, falharam: 0, motivo: null, ligado: !!cfgOcr.pastaCadastro };
 
     if (fs.existsSync(pastaTemp)) {
-        fs.readdirSync(pastaTemp).forEach(nomeArquivo => {
+        for (const nomeArquivo of fs.readdirSync(pastaTemp)) {
             const origem = path.join(pastaTemp, nomeArquivo);
-            if (!fs.statSync(origem).isFile()) return;
+            if (!fs.statSync(origem).isFile()) continue;
 
             const ext = obterExtensao(nomeArquivo);
             const ehJpg = ext.toUpperCase() === '.JPG';
@@ -342,7 +343,7 @@ function salvarImagens(dados) {
                 const preview = bytesParaExibir(origem);
                 if (!preview) {
                     console.error('Modo OCR: sem preview embutido em', nomeArquivo, '- CR2 mantido na temp');
-                    return;
+                    continue;
                 }
                 const nomeSaida = dados.gtin + '_' + timestamp + '_' + contadorJpg + sufixosExtras + '.jpg';
                 const destinoOcr = path.join(pastaDestinoJpg, nomeSaida);
@@ -360,7 +361,37 @@ function salvarImagens(dados) {
 
                 contadorJpg++;
                 movidos++;
-                return;
+                continue;
+            }
+
+            // Modo OCR + JPG puro (sem RAW par - camera sem RAW ou RAW-only desligado pra
+            // essa foto): nao tem preview leve embutido pra extrair, entao recomprime de
+            // verdade (mesma resolucao, qualidade menor) - mesmo efeito de peso que o
+            // branch do RAW acima. Sem isso esse arquivo cai no bloco generico debaixo,
+            // que so renomeia e NUNCA chamava copiarParaCadastro - o OCR nunca chegava
+            // no Cadastro quando a foto era JPG puro.
+            if (modoOcr && ehJpg) {
+                const recompressao = await imagemOcr.recomprimirParaOcr(origem, cfgOcr.qualidadeJpgOcr);
+                if (!recompressao.ok) {
+                    console.error('Modo OCR: falha ao recomprimir', nomeArquivo, '-', recompressao.motivo, '- arquivo mantido na temp');
+                    continue;
+                }
+                const nomeSaida = dados.gtin + '_' + timestamp + '_' + contadorJpg + sufixosExtras + '.jpg';
+                const destinoOcr = path.join(pastaDestinoJpg, nomeSaida);
+                fs.writeFileSync(destinoOcr, recompressao.buffer);
+                fs.unlinkSync(origem);
+
+                const copia = ocrCadastro.copiarParaCadastro(
+                    cfgOcr, dados.os, dados.gtin, subpastaDestino, destinoOcr, nomeSaida);
+                if (copia.estado === 'copiado') resumoCadastro.copiados++;
+                else if (copia.estado === 'falhou') {
+                    resumoCadastro.falharam++;
+                    resumoCadastro.motivo = copia.motivo;
+                }
+
+                contadorJpg++;
+                movidos++;
+                continue;
             }
 
             let destino;
@@ -371,7 +402,7 @@ function salvarImagens(dados) {
                 destino = path.join(pastaDestinoRaw, dados.gtin + '_' + timestamp + '_' + contadorRaw + sufixosExtras + ext);
                 contadorRaw++;
             } else {
-                return;
+                continue;
             }
 
             try {
@@ -383,7 +414,7 @@ function salvarImagens(dados) {
                 fs.unlinkSync(origem);
             }
             movidos++;
-        });
+        }
     }
 
     return { movidos, cadastro: resumoCadastro };
@@ -646,7 +677,7 @@ const server = http.createServer((req, res) => {
     }
 
     if (req.method === 'POST' && req.url === '/api/salvar') {
-        lerCorpo(req).then(corpo => {
+        lerCorpo(req).then(async corpo => {
             let dados;
             try {
                 dados = JSON.parse(corpo);
@@ -663,7 +694,7 @@ const server = http.createServer((req, res) => {
             }
 
             try {
-                const resultado = salvarImagens(dados);
+                const resultado = await salvarImagens(dados);
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ ok: true, movidos: resultado.movidos, cadastro: resultado.cadastro }));
             } catch (err) {
@@ -1005,7 +1036,7 @@ const server = http.createServer((req, res) => {
     // do status - marcar "Concluido" daqui faria o Redmine mentir se o robo estivesse parado.
     // Sem "arquivos" no corpo, gera o GTIN inteiro (idempotente: regerar so sobrescreve).
     if (req.method === 'POST' && req.url === '/api/ocr/gerar') {
-        lerCorpo(req).then(corpo => {
+        lerCorpo(req).then(async corpo => {
             let dados;
             try {
                 dados = JSON.parse(corpo);
@@ -1022,7 +1053,7 @@ const server = http.createServer((req, res) => {
             }
 
             try {
-                const resultado = ocrCadastro.gerarOcr(dados.os, dados.gtin, dados.arquivos);
+                const resultado = await ocrCadastro.gerarOcr(dados.os, dados.gtin, dados.arquivos);
                 res.writeHead(resultado.erro ? 404 : 200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify(resultado));
             } catch (err) {
